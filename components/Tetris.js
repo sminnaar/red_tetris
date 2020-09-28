@@ -11,6 +11,7 @@ import Display from './Display'
 import StartButton from './StartButton'
 
 // Custom Hooks
+// import { useInterval } from ''
 import { usePlayer } from '../hooks/usePlayer'
 import { useStage } from '../hooks/useStage'
 
@@ -19,7 +20,7 @@ const Tetris = () => {
     const [gameOver, setGameOver] = useState(false)
 
     // const [player] = usePlayer()
-    const [player, updatePlayerPos, resetPlayer] = usePlayer()
+    const [player, updatePlayerPos, resetPlayer, playerRotate] = usePlayer()
     const [stage, setStage] = useStage(player, resetPlayer)
 
 
@@ -56,19 +57,22 @@ const Tetris = () => {
     }
 
     const move = ({ keyCode }) => {
+        console.log(keyCode)
         if (!gameOver) {
             if (keyCode === 37) {
-                moveBlock(-1)
+                moveBlock(-1);
             } else if (keyCode === 39) {
-                moveBlock(1)
+                moveBlock(1);
             } else if (keyCode === 40) {
-                dropPlayer()
+                dropPlayer();
+            } else if (keyCode === 38) {
+                playerRotate(stage, 1);
             }
         }
-    }
+    };
 
     return (
-        <StyledTetrisWrapper role="button" tabIndex="0" onKeyDown={e => move(e)}>
+        <StyledTetrisWrapper role="button" tabIndex="0" onKeyDown={e => move(e) && console.log(e.keyCode)}>
             <StyledTetris>
                 <Stage stage={stage} />
                 <aside>
