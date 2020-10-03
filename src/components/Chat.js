@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import userGen from "username-generator"
 import { Button, Input } from 'reactstrap';
 
-
 import socketIOClient from "socket.io-client";
-const ENDPOINT = 'http://127.0.0.1:3000';
+const ENDPOINT = 'http://127.0.0.1:8080';
 const socket = socketIOClient(ENDPOINT);
 
 export default function Chat() {
@@ -22,7 +21,7 @@ export default function Chat() {
         // Subscribe a new user
         socket.emit("login", userGen.generateUsername());
         // List of connected users
-        socket.on("users", data => {
+        socket.on("chatters", data => {
             setUser({ usersList: JSON.parse(data) })
         });
         // Get the messages

@@ -5,7 +5,7 @@ import styled from 'styled-components'
 export const StyledTetrisWrapper = styled.div`
     width: 100vw;
     height: 100vh;
-    background: #000;
+    background: white;
     background-size: cover;
     overflow: hidden;
 `

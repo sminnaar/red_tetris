@@ -10,6 +10,8 @@ import Stage from './Stage'
 import Display from './Display'
 import StartButton from './StartButton'
 
+import Chat from './Chat'
+
 // Custom Hooks
 import { useInterval } from '../hooks/useInterval'
 import { usePlayer } from '../hooks/usePlayer'
@@ -115,27 +117,30 @@ const Tetris = () => {
     }, dropTime)
 
     return (
-        <StyledTetrisWrapper
-            role="button" tabIndex="0"
-            onKeyDown={e => move(e) && console.log(e.keyCode)}
-            onKeyUp={keyUp}
-        >
-            <StyledTetris>
-                <Stage stage={stage} />
-                <aside>
-                    {gameOver ? (
-                        <Display gameOver={gameOver} text="Game Over" />
-                    ) : (
-                            < div >
-                                <Display text={`Score: ${score}`} />
-                                <Display text={`Rows: ${rows}`} />
-                                <Display text={`Level: ${level}`} />
-                            </div>
-                        )}
-                    <StartButton callback={startGame} />
-                </aside>
-            </StyledTetris>
-        </StyledTetrisWrapper >
+        <>
+            <StyledTetrisWrapper
+                role="button" tabIndex="0"
+                onKeyDown={e => move(e) && console.log(e.keyCode)}
+                onKeyUp={keyUp}
+            >
+                <StyledTetris>
+                    <Stage stage={stage} />
+                    <aside>
+                        {gameOver ? (
+                            <Display gameOver={gameOver} text="Game Over" />
+                        ) : (
+                                < div >
+                                    <Display text={`Score: ${score}`} />
+                                    <Display text={`Rows: ${rows}`} />
+                                    <Display text={`Level: ${level}`} />
+                                </div>
+                            )}
+                        <StartButton callback={startGame} />
+                    </aside>
+                </StyledTetris>
+            </StyledTetrisWrapper >
+            <Chat />
+        </>
     )
 }
 
