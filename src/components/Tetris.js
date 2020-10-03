@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-import { createStage, checkCollision } from '../gameHelpers'
+import { createStage, checkCollision } from '../lib/helpers'
 
 // Styled Components
 import { StyledTetrisWrapper, StyledTetris } from './styles/StyledTetris'
