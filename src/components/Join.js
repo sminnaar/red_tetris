@@ -4,7 +4,7 @@ import { Redirect } from 'react-router-dom';
 // import './styles/Join.css';
 
 import socketIOClient from "socket.io-client";
-const ENDPOINT = 'http://127.0.0.1:3000';
+const ENDPOINT = 'http://127.0.0.1:8080';
 const socket = socketIOClient(ENDPOINT);
 
 const Join = () => {
