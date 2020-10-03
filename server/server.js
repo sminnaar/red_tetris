@@ -1,23 +1,30 @@
 
-const moment = require("moment");
+import { joinRoom, leaveRooms, checkScore, beginRound } from './classes/Game'
 
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
+const uuid = require('uuid/v1');
+const path = require('path');
 
 const app = express();
-const routes = require("./routes/index");
 
 if (process.env.NODE_ENV != 'development') {
-  console.log(' In Production mode')
-  // console.log(process.env.NODE_ENV)
-  app.use(routes);
+  console.log('In Production mode')
 
+  const router = express.Router();
+
+  router.use(express.static(path.join(__dirname, '../build')));
+
+  router.get('/*', function (req, res) {
+    res.sendFile(path.join(__dirname, '../build', 'index.html'));
+  });
+
+  app.use(router);
 } else {
 
   const cors = require('cors');
 
-  // Set up a whitelist and check against it:
   var whitelist = ['http:localhost:3000']
   var corsOptions = {
     origin: function (origin, callback) {
@@ -29,142 +36,176 @@ if (process.env.NODE_ENV != 'development') {
     }
   }
 
-  // Then pass them to cors:
   app.use(cors(corsOptions));
-
-  // router.get('/', function (req, res) {
-  //   res.sendFile(path.join(__dirname, '../../build', 'index.html'));
-  // });
-
 }
 
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const {
-  addUser,
-  removeUser,
-  getUser,
-  getUserInRoom,
-  setStartGame,
-  users,
-  startGame,
-  genTetrominoArr,
-  deadUser
-} = require('./lib/userHelper');
-const { argv } = require("process");
-
 const port = process.env.PORT || 8080;
 
-let chatters = [];
-io.on("connection", (socket) => {
+const rooms = {};
 
-  socket.on("login", (userName) => {
-    chatters.push({ id: socket.id, userName: userName, connectionTime: new moment().format("YYYY-MM-DD HH:mm:ss") });
-    socket.emit("connecteduser", JSON.stringify(chatters[chatters.length - 1]));
-    io.emit("chatters", JSON.stringify(chatters));
+
+
+/**
+ * The starting point for a user connecting to our lovely little multiplayer
+ * server!
+ */
+io.on('connection', (socket) => {
+
+  // give each socket a random identifier so that we can determine who is who when
+  // we're sending messages back and forth!
+  socket.id = uuid();
+  console.log('a user connected');
+
+  /**
+   * Lets us know that players have joined a room and are waiting in the waiting room.
+   */
+  socket.on('ready', () => {
+    console.log(socket.id, "is ready!");
+    const room = rooms[socket.roomId];
+    // when we have two players... START THE GAME!
+    if (room.sockets.length == 2) {
+      // tell each player to start the game.
+      for (const client of room.sockets) {
+        client.emit('initGame');
+      }
+    }
   });
 
-  socket.on("sendMsg", msgTo => {
-    msgTo = JSON.parse(msgTo);
-    const minutes = new Date().getMinutes();
-    io.emit("getMsg",
-      JSON.stringify({
+  /**
+   * The game has started! Give everyone their default values and tell each client
+   * about each player
+   * @param data we don't actually use that so we can ignore it.
+   * @param callback Respond back to the message with information about the game state
+   */
+  socket.on('startGame', (data, callback) => {
+    const room = rooms[socket.roomId];
+    if (!room) {
+      return;
+    }
+    const others = [];
+    for (const client of room.sockets) {
+      client.x = 0;
+      client.y = 0;
+      client.score = 0;
+      if (client === socket) {
+        continue;
+      }
+      others.push({
+        id: client.id,
+        x: client.x,
+        y: client.y,
+        score: client.score,
+        isIt: false,
+      });
+    }
+
+    // Tell the client who they are and who everyone else is!
+    const ack = {
+      me: {
         id: socket.id,
-        userName: chatters.find(e => e.id == msgTo.id).userName,
-        msg: msgTo.msg,
-        time: new Date().getHours() + ":" + (minutes < 10 ? "0" + minutes : minutes)
-      }));
+        x: socket.x,
+        y: socket.y,
+        score: socket.score,
+        isIt: false,
+      },
+      others
+    };
+
+    callback(ack);
+
+    // Start the game in 5 seconds
+    setTimeout(() => {
+      beginRound(socket, null);
+    }, 5000);
   });
 
-  // socket.once("disconnect", () => {
-  //   let index = -1;
-  //   if (chatters.length >= 0) {
-  //     index = chatters.findIndex(e => e.id == socket.id);
-  //   }
-  //   if (index >= 0)
-  //     chatters.splice(index, 1);
-  //   io.emit("chatters", JSON.stringify(chatters));
-  // });
-
-  socket.on('join', ({ name, room }, callback) => {
-    const { error, user } = addUser({ id: socket.id, name, room });
-
-    if (error) {
-      return callback(error)
-    } else {
-      socket.join(room);
-      io.to(room).emit("updateUsers", users.filter((user) => user.room === room));
+  /**
+   * Gets fired every time a player has moved! Then forward that message to everyone else!
+   * @param data A JSON string that represents the x and y position of the player that moved. Needs to be parsed!
+   */
+  socket.on('moved', (data) => {
+    data = JSON.parse(data);
+    const room = rooms[socket.roomId];
+    if (!room) {
+      return;
     }
-
-  });
-
-  socket.on("gameStart", (room) => {
-    io.to(room).emit("gameStarted", startGame(room));
-  });
-
-  socket.on('genTetrominoArr', (room) => {
-    const tetroArr = genTetrominoArr();
-    io.to(room).emit("tetrominoArr", tetroArr);
-  });
-
-  socket.on("setBoard", (stage) => {
-    let user = getUser(socket.id);
-    users.map((user) => {
-      if (user.id === socket.id) {
-        user.board = [...stage];
+    socket.x = data.x;
+    socket.y = data.y;
+    // Tell everyone else about their updated position!
+    for (const client of room.sockets) {
+      if (client == socket) {
+        continue;
       }
-    });
-    // 
-    let room = user.room;
-    io.to(room).emit("updateUsers", users.filter((user) => user.room === room));
-  });
-
-  socket.on("winner", (champ) => {
-    if (champ) {
-      io.to(champ.room).emit("winner", { champ, users });
+      client.emit(socket.id, {
+        x: socket.x,
+        y: socket.y,
+        score: socket.score,
+        isIt: socket.isIt
+      });
     }
   });
 
-  socket.on("deadUser", (id) => {
-    let user = getUser(id);
-    let room = user.room;
-    io.to(room).emit("deadUser", deadUser(id));
+  /**
+   * Gets fired when the players collide! The round is over!
+   */
+  socket.on('collide', (id) => {
+    beginRound(socket, id);
   });
 
-  socket.on("clearRow", () => {
-    // 
-    let user = getUser(socket.id);
-    let room = user.room;
-    if (room) {
-      socket.to(room).emit("addRow")
+  /**
+   * Gets fired when someone wants to get the list of rooms. respond with the list of room names.
+   */
+  socket.on('getRoomNames', (data, callback) => {
+    const roomNames = [];
+    for (const id in rooms) {
+      const { name } = rooms[id];
+      const room = { name, id };
+      roomNames.push(room);
     }
-  })
 
-  socket.on("disconnect", () => {
-    let index = -1;
-    if (chatters.length >= 0) {
-      index = chatters.findIndex(e => e.id == socket.id);
-    }
-    if (index >= 0)
-      chatters.splice(index, 1);
-    io.emit("chatters", JSON.stringify(chatters));
+    callback(roomNames);
+  });
 
-    ///
+  /**
+   * Gets fired when a user wants to create a new room.
+   */
+  socket.on('createRoom', (roomName, callback) => {
+    const room = {
+      id: uuid(), // generate a unique id for the new room, that way we don't need to deal with duplicates.
+      name: roomName,
+      sockets: []
+    };
+    rooms[room.id] = room;
+    // have the socket join the room they've just created.
+    joinRoom(socket, room);
+    callback();
+  });
 
-    const user = removeUser(socket.id);
+  /**
+   * Gets fired when a player has joined a room.
+   */
+  socket.on('joinRoom', (roomId, callback) => {
+    const room = rooms[roomId];
+    joinRoom(socket, room);
+    callback();
+  });
 
-    if (user) {
-      let room = user.room;
-      if (user.inGame) {
-        io.to(room).emit("deadUser", deadUser(socket.id));
-      } else {
-        let usersInRoom = users.filter((user) => user.room === room);
-        if (usersInRoom.length > 0) {
-          io.to(room).emit("updateUsers", usersInRoom);
-        }
-      }
-    }
+  /**
+   * Gets fired when a player leaves a room.
+   */
+  socket.on('leaveRoom', () => {
+    leaveRooms(socket);
+  });
+
+  /**
+   * Gets fired when a player disconnects from the server.
+   */
+  socket.on('disconnect', () => {
+    console.log('user disconnected');
+    leaveRooms(socket);
   });
 
 });
