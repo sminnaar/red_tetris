@@ -42,8 +42,8 @@ const Tetris = () => {
         setLevel
     ] = useGameStatus(rowsCleared);
 
-
-    console.log('re-render')
+    // Shows when the stage is rendered
+    // console.log('re-render')
 
     const moveBlock = dir => {
         if (!checkCollision(player, stage, { x: dir, y: 0 })) {
@@ -74,7 +74,7 @@ const Tetris = () => {
             updatePlayerPos({ x: 0, y: 1, collided: false })
         } else {
             if (player.pos.y < 1) {
-                console.log('GAME OVER!!!')
+                // console.log('GAME OVER!!!')
                 setGameOver(true)
                 setDroptime(null)
             }
@@ -85,20 +85,22 @@ const Tetris = () => {
     const keyUp = ({ keyCode }) => {
         if (!gameOver) {
             if (keyCode === 40) {
-                console.log("Interval On");
+                // console.log("Interval On");
                 setDroptime(1000 / (level + 1) + 200);
             }
         }
     }
 
     const dropPlayer = () => {
-        console.log("Interval Off");
+        // console.log("Interval Off");
         setDroptime(null);
         drop();
     }
 
     const move = ({ keyCode }) => {
-        console.log(keyCode)
+        // Check what inputs are used
+        // To check keycode to modify controls
+        // console.log(keyCode)
         if (!gameOver) {
             if (keyCode === 37) {
                 moveBlock(-1);

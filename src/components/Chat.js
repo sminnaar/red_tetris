@@ -17,6 +17,10 @@ export default function Chat() {
     });
     const [loggedUser, setLoggedUser] = useState();
 
+
+    // useState can be used instead of useEffect. Added dependencies to useEffect to fix this warning
+    // See : https://stackoverflow.com/questions/58866796/understanding-the-react-hooks-exhaustive-deps-lint-rule
+
     useEffect(() => {
         // Subscribe a new user
         socket.emit("login", userGen.generateUsername());
@@ -30,7 +34,7 @@ export default function Chat() {
             listMessages.push(JSON.parse(data));
             setRecMsg({ listMsg: listMessages });
         });
-    }, []);
+    }, [setUser, setRecMsg, recMsg.listMsg]);
 
     // Send a message
     const sendMessage = () => {

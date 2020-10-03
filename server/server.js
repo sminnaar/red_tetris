@@ -8,7 +8,35 @@ const socketIo = require("socket.io");
 const app = express();
 const routes = require("./routes/index");
 
-app.use(routes);
+if (process.env.NODE_ENV != 'development') {
+  console.log(' In Production mode')
+  // console.log(process.env.NODE_ENV)
+  app.use(routes);
+
+} else {
+
+  const cors = require('cors');
+
+  // Set up a whitelist and check against it:
+  var whitelist = ['http:localhost:3000']
+  var corsOptions = {
+    origin: function (origin, callback) {
+      if (whitelist.indexOf(origin) !== -1) {
+        callback(null, true)
+      } else {
+        callback(new Error('Not allowed by CORS'))
+      }
+    }
+  }
+
+  // Then pass them to cors:
+  app.use(cors(corsOptions));
+
+  // router.get('/', function (req, res) {
+  //   res.sendFile(path.join(__dirname, '../../build', 'index.html'));
+  // });
+
+}
 
 const server = http.createServer(app);
 const io = socketIo(server);
@@ -24,6 +52,7 @@ const {
   genTetrominoArr,
   deadUser
 } = require('./lib/userHelper');
+const { argv } = require("process");
 
 const port = process.env.PORT || 8080;
 

@@ -19,11 +19,12 @@
     "username-generator": "^1.1.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "NODE_ENV=development react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "server": "node server/server.js"
+    "server": "node server/server.js",
+    "dev-ser": "NODE_ENV=development node server/server.js"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -39,5 +40,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "cors": "^2.8.5",
+    "eslint-plugin-react-hooks": "^4.1.2"
   }
 }
