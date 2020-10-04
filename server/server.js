@@ -1,6 +1,3 @@
-
-import { joinRoom, leaveRooms, checkScore, beginRound } from './classes/Game'
-
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
@@ -39,13 +36,81 @@ if (process.env.NODE_ENV != 'development') {
   app.use(cors(corsOptions));
 }
 
-const server = http.createServer(app);
-const io = socketIo(server);
+const rooms = {};
 
 const port = process.env.PORT || 8080;
 
-const rooms = {};
+const server = http.createServer(app);
+const io = socketIo(server);
 
+/**
+ * Will connect a socket to a specified room
+ * @param socket A connected socket.io socket
+ * @param room An object that represents a room from the `rooms` instance variable object
+ */
+const joinRoom = (socket, room) => {
+  room.sockets.push(socket);
+  socket.join(room.id, () => {
+    // store the room id in the socket for future use
+    socket.roomId = room.id;
+    console.log(socket.id, "Joined", room.id);
+  });
+};
+
+/**
+* Will make the socket leave any rooms that it is a part of
+* @param socket A connected socket.io socket
+*/
+const leaveRooms = (socket) => {
+  const roomsToDelete = [];
+  for (const id in rooms) {
+    const room = rooms[id];
+    // check to see if the socket is in the current room
+    if (room.sockets.includes(socket)) {
+      socket.leave(id);
+      // remove the socket from the room object
+      room.sockets = room.sockets.filter((item) => item !== socket);
+    }
+    // Prepare to delete any rooms that are now empty
+
+    if (room.sockets.length == 0) {
+      roomsToDelete.push(room);
+    }
+  }
+
+  // Delete all the empty rooms that we found earlier
+  for (const room of roomsToDelete) {
+    delete rooms[room.id];
+  }
+};
+
+/**
+* Will check to see if we have a game winner for the room.
+* @param room An object that represents a room from the `rooms` instance variable object
+* @param sendMessage Whether or not to tell each socket if they've won or lost the game
+* @returns {boolean} true if we've found a winner. false if we haven't found a winner
+*/
+const checkScore = (room, sendMessage = false) => {
+  let winner = null;
+  for (const client of room.sockets) {
+    if (client.score >= NUM_ROUNDS) {
+      winner = client;
+      break;
+    }
+  }
+
+  if (winner) {
+    if (sendMessage) {
+      for (const client of room.sockets) {
+        client.emit('gameOver', client.id === winner.id ? "You won the game!" : "You lost the game :(");
+      }
+    }
+
+    return true;
+  }
+
+  return false;
+};
 
 
 /**
@@ -57,7 +122,7 @@ io.on('connection', (socket) => {
   // give each socket a random identifier so that we can determine who is who when
   // we're sending messages back and forth!
   socket.id = uuid();
-  console.log('a user connected');
+  console.log(`Client ${socket.id} connected`);
 
   /**
    * Lets us know that players have joined a room and are waiting in the waiting room.
@@ -65,94 +130,13 @@ io.on('connection', (socket) => {
   socket.on('ready', () => {
     console.log(socket.id, "is ready!");
     const room = rooms[socket.roomId];
-    // when we have two players... START THE GAME!
-    if (room.sockets.length == 2) {
+    // when we have 6 players... START THE GAME!
+    if (room.sockets.length == 6) {
       // tell each player to start the game.
       for (const client of room.sockets) {
         client.emit('initGame');
       }
     }
-  });
-
-  /**
-   * The game has started! Give everyone their default values and tell each client
-   * about each player
-   * @param data we don't actually use that so we can ignore it.
-   * @param callback Respond back to the message with information about the game state
-   */
-  socket.on('startGame', (data, callback) => {
-    const room = rooms[socket.roomId];
-    if (!room) {
-      return;
-    }
-    const others = [];
-    for (const client of room.sockets) {
-      client.x = 0;
-      client.y = 0;
-      client.score = 0;
-      if (client === socket) {
-        continue;
-      }
-      others.push({
-        id: client.id,
-        x: client.x,
-        y: client.y,
-        score: client.score,
-        isIt: false,
-      });
-    }
-
-    // Tell the client who they are and who everyone else is!
-    const ack = {
-      me: {
-        id: socket.id,
-        x: socket.x,
-        y: socket.y,
-        score: socket.score,
-        isIt: false,
-      },
-      others
-    };
-
-    callback(ack);
-
-    // Start the game in 5 seconds
-    setTimeout(() => {
-      beginRound(socket, null);
-    }, 5000);
-  });
-
-  /**
-   * Gets fired every time a player has moved! Then forward that message to everyone else!
-   * @param data A JSON string that represents the x and y position of the player that moved. Needs to be parsed!
-   */
-  socket.on('moved', (data) => {
-    data = JSON.parse(data);
-    const room = rooms[socket.roomId];
-    if (!room) {
-      return;
-    }
-    socket.x = data.x;
-    socket.y = data.y;
-    // Tell everyone else about their updated position!
-    for (const client of room.sockets) {
-      if (client == socket) {
-        continue;
-      }
-      client.emit(socket.id, {
-        x: socket.x,
-        y: socket.y,
-        score: socket.score,
-        isIt: socket.isIt
-      });
-    }
-  });
-
-  /**
-   * Gets fired when the players collide! The round is over!
-   */
-  socket.on('collide', (id) => {
-    beginRound(socket, id);
   });
 
   /**
@@ -165,7 +149,7 @@ io.on('connection', (socket) => {
       const room = { name, id };
       roomNames.push(room);
     }
-
+    console.log(roomNames)
     callback(roomNames);
   });
 
@@ -178,7 +162,9 @@ io.on('connection', (socket) => {
       name: roomName,
       sockets: []
     };
-    rooms[room.id] = room;
+    // rooms[room.id] = room;
+    rooms[room.name] = room;
+
     // have the socket join the room they've just created.
     joinRoom(socket, room);
     callback();
@@ -187,8 +173,8 @@ io.on('connection', (socket) => {
   /**
    * Gets fired when a player has joined a room.
    */
-  socket.on('joinRoom', (roomId, callback) => {
-    const room = rooms[roomId];
+  socket.on('joinRoom', (roomName, callback) => {
+    const room = rooms[roomName];
     joinRoom(socket, room);
     callback();
   });
