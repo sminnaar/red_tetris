@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Redirect } from 'react-router-dom';
 import useLobby from "../hooks/useLobby";
 import userGen from "username-generator"
@@ -11,14 +11,21 @@ const Lobby = (props) => {
     const { joined, joinRoom } = useLobby();
 
     const handleRoomNameChange = (event) => {
-        setUser(userGen.generateUsername());
         setRoom(event.target.value);
     };
 
     const handleJoinRooms = () => {
-        setUser(userGen.generateUsername());
         joinRoom(roomName, userName);
     };
+
+    useEffect(() => {
+
+        setUser(userGen.generateUsername());
+
+        return () => {
+            setUser('Default');
+        };
+    }, []);
 
     if (!joined) {
         return (

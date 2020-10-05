@@ -16,7 +16,14 @@ import { usePlayer } from '../hooks/usePlayer'
 import { useStage } from '../hooks/useStage'
 import { useGameStatus } from '../hooks/useGameStatus';
 
+import useInfo from '../hooks/useInfo';
+
 const Tetris = () => {
+
+
+    const { rooms, users, getInfo } = useInfo();
+
+
     const [dropTime, setDroptime] = useState(null)
     const [gameOver, setGameOver] = useState(false)
     const [
@@ -111,6 +118,15 @@ const Tetris = () => {
         drop();
     }, dropTime)
 
+
+    const handleInfo = () => {
+        getInfo()
+        getInfo()
+        console.log("Info")
+        console.log(users)
+        console.log(rooms)
+    };
+
     return (
         <>
             <StyledTetrisWrapper
@@ -120,7 +136,26 @@ const Tetris = () => {
             >
                 <StyledTetris>
                     <Stage stage={stage} />
+
+                    <aside>
+                        {gameOver ? (
+                            <Display gameOver={gameOver} text="Game Over" />
+                        ) : (
+                                < div >
+                                    <Display text={`Score: ${score}`} />
+                                    <Display text={`Rows: ${rows}`} />
+                                    <Display text={`Level: ${level}`} />
+                                </div>
+                            )}
+                    </aside>
+
+                    <button onClick={handleInfo} className="input-button">
+                        Info
+                        </button>
+
                     <StartButton callback={startGame} />
+
+
                 </StyledTetris>
 
             </StyledTetrisWrapper >
@@ -131,14 +166,3 @@ const Tetris = () => {
 export default Tetris;
 
 
-{/* <aside>
-                        {gameOver ? (
-                            <Display gameOver={gameOver} text="Game Over" />
-                        ) : (
-                                < div >
-                                    <Display text={`Score: ${score}`} />
-                                    <Display text={`Rows: ${rows}`} />
-                                    <Display text={`Level: ${level}`} />
-                                </div>
-                            )}
-                    </aside> */}

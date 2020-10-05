@@ -95,14 +95,16 @@ io.on('connection', (socket) => {
    * Gets fired when a player joins a room.
    */
   socket.on('joinRoom', (roomName, userName, callback) => {
+    console.log("USER" + userName)
     const user = {
-      id: uuid(),
+      // id: uuid(),
       name: userName,
     };
+    // users[user.name] = new Player(user, user.id, user.name, null);
     users[user.name] = new Player(user, user.id, user.name, null);
     if (!rooms[roomName]) {
       room = {
-        id: uuid(),
+        // id: uuid(),
         name: roomName,
         sockets: []
       };
@@ -114,6 +116,37 @@ io.on('connection', (socket) => {
     }
     callback();
   });
+
+
+
+
+  socket.on('getInfo', (data, callback) => {
+
+    const userNames = [];
+    const roomNames = [];
+
+    for (const id in users) {
+      const { name } = users[id];
+      const user = { name };
+      userNames.push(user);
+    }
+
+    for (const id in rooms) {
+      const { name } = rooms[id];
+      const room = { name };
+      roomNames.push(room);
+    }
+
+    console.log(userNames)
+    console.log(roomNames)
+
+    callback(roomNames, userNames);
+  });
+
+
+
+
+
 
   /**
    * Gets fired when a player leaves a room.
