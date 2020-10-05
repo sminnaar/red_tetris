@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import { createStage, checkCollision } from '../lib/helpers'
 
 // Styled Components
-import { StyledTetrisWrapper, StyledTetris } from './styles/StyledTetris'
+import { StyledTetrisWrapper, StyledTetris, StyledAside } from './styles/StyledTetris'
+
+import "../components/ChatRoom/ChatRoom.css";
 
 // Components
 import Stage from './Stage'
@@ -11,14 +13,26 @@ import Display from './Display'
 import StartButton from './StartButton'
 
 import Chat from './Chat'
+import ChatRoom from './ChatRoom/ChatRoom'
 
 // Custom Hooks
 import { useInterval } from '../hooks/useInterval'
 import { usePlayer } from '../hooks/usePlayer'
 import { useStage } from '../hooks/useStage'
 import { useGameStatus } from '../hooks/useGameStatus';
+import useChat from '../hooks/useChat';
 
-const Tetris = () => {
+
+import socketIOClient from "socket.io-client";
+
+
+const Tetris = (props) => {
+
+    const url = props.location.pathname;
+    // console.log(url)
+    const room = url.substring(1, url.indexOf('['));
+    const user = url.substring((url.indexOf('[') + 1), url.indexOf(']'));
+
     const [dropTime, setDroptime] = useState(null)
     const [gameOver, setGameOver] = useState(false)
 
@@ -41,6 +55,15 @@ const Tetris = () => {
         level,
         setLevel
     ] = useGameStatus(rowsCleared);
+
+
+    // UseChat is now the useGame
+    const { messages, sendMessage, sendPiece, opponentMove } = useChat(room, user);
+    const [newMessage, setNewMessage] = useState("");
+
+
+    // console.log(opponentMove);
+    // console.log(stage);
 
     // Shows when the stage is rendered
     // console.log('re-render')
@@ -101,6 +124,7 @@ const Tetris = () => {
         // Check what inputs are used
         // To check keycode to modify controls
         // console.log(keyCode)
+
         if (!gameOver) {
             if (keyCode === 37) {
                 moveBlock(-1);
@@ -118,30 +142,73 @@ const Tetris = () => {
         drop();
     }, dropTime)
 
+    useEffect(() => {
+
+        sendPiece(stage);
+
+
+    }, [stage]);
+
+
+    const handleNewMessageChange = (event) => {
+        setNewMessage(event.target.value);
+    };
+
+    const handleSendMessage = () => {
+        sendMessage(newMessage);
+        setNewMessage("");
+    };
+
     return (
-        <>
-            <StyledTetrisWrapper
-                role="button" tabIndex="0"
-                onKeyDown={e => move(e) && console.log(e.keyCode)}
-                onKeyUp={keyUp}
-            >
-                <StyledTetris>
-                    <Stage stage={stage} />
+        <><StyledTetrisWrapper
+            role="button" tabIndex="0"
+            onKeyDown={e => move(e) && console.log(e.keyCode)}
+            onKeyUp={keyUp}
+        >
+            <StyledTetris>
+                {/* {opponentMove.body ? <Stage stage={opponentMove} /> : null} */}
+                <Stage stage={opponentMove.body} id='2' />
+                <Stage stage={stage} id='1' />
+                <StartButton callback={startGame} />
+
+                <StyledAside>
                     <aside>
                         {gameOver ? (
                             <Display gameOver={gameOver} text="Game Over" />
                         ) : (
                                 < div >
-                                    <Display text={`Score: ${score}`} />
-                                    <Display text={`Rows: ${rows}`} />
-                                    <Display text={`Level: ${level}`} />
+                                    {/* <StartButton callback={startGame} /> */}
+
+                                    {/* <h1 className="room-name">Room: {room}</h1> */}
+                                    <h1 className="room-name">User: {user}</h1>
+                                    <div className="messages-container">
+                                        <ol className="messages-list">
+                                            {messages.map((message, i) => (
+                                                <li
+                                                    key={i}
+                                                    className={`message-item ${message.ownedByCurrentUser ? "my-message" : "received-message"
+                                                        }`}
+                                                >
+                                                    {message.body}
+                                                </li>
+                                            ))}
+                                        </ol>
+                                    </div>
+                                    <textarea
+                                        value={newMessage}
+                                        onChange={handleNewMessageChange}
+                                        placeholder="Write message..."
+                                        className="new-message-input-field"
+                                    />
+                                    <button onClick={handleSendMessage} className="send-message-button">
+                                        Send
+                                    </button>
                                 </div>
                             )}
-                        <StartButton callback={startGame} />
                     </aside>
-                </StyledTetris>
-            </StyledTetrisWrapper >
-            <Chat />
+                </StyledAside>
+            </StyledTetris>
+        </StyledTetrisWrapper >
         </>
     )
 }
