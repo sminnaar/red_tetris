@@ -4,8 +4,10 @@
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
-const uuid = require('uuid/v1');
 const path = require('path');
+
+const Game = require('./classes/Game').Game
+const Player = require('./classes/Player').Player
 
 const app = express();
 
@@ -45,16 +47,32 @@ const io = socketIo(server);
 const port = process.env.PORT || 8080;
 
 const rooms = {};
+const users = {};
+
 
 const NEW_CHAT_MESSAGE_EVENT = "newChatMessage";
 
 io.on("connection", (socket) => {
-  console.log(`Client ${socket.id} connected`);
-  // console.log(`Socket ${socket} connected`);
 
-  // Join a conversation
-  const { roomId } = socket.handshake.query;
+  console.log(`Client ${socket.id} connected`);
+
+  const { roomId, userId } = socket.handshake.query;
   console.log(`Server roomId: ${roomId}`);
+  console.log(`Server userId: ${userId}`);
+
+  // Join a room
+  user = {
+    userId: userId,
+  };
+  // users[user.userId] = user;
+  users[user.name] = new Player(user.userid);
+
+  room = {
+    roomId: roomId
+  };
+  // rooms[room.roomId] = room;
+  rooms[room.name] = new Game(roomId);
+
   socket.join(roomId);
 
   // Listen for new messages

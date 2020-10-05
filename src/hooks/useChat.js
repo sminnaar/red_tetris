@@ -13,7 +13,7 @@ const SOCKET_SERVER_URL = "http://localhost:8080";
 // console.log(player);
 
 
-const useChat = (roomId) => {
+const useChat = (roomId, userId) => {
 
   // console.log(player);
   const [messages, setMessages] = useState([]);
@@ -27,7 +27,7 @@ const useChat = (roomId) => {
 
   useEffect(() => {
     socketRef.current = socketIOClient(SOCKET_SERVER_URL, {
-      query: { roomId },
+      query: { roomId, userId },
     });
 
     socketRef.current.on(NEW_CHAT_MESSAGE_EVENT, (message) => {

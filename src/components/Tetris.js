@@ -58,7 +58,7 @@ const Tetris = (props) => {
 
 
     // UseChat is now the useGame
-    const { messages, sendMessage, sendPiece, opponentMove } = useChat(room, player);
+    const { messages, sendMessage, sendPiece, opponentMove } = useChat(room, user);
     const [newMessage, setNewMessage] = useState("");
 
 
