@@ -19,13 +19,6 @@ import { useGameStatus } from '../hooks/useGameStatus';
 const Tetris = () => {
     const [dropTime, setDroptime] = useState(null)
     const [gameOver, setGameOver] = useState(false)
-
-    //
-
-
-    //
-
-
     const [
         player,
         updatePlayerPos,
@@ -45,9 +38,6 @@ const Tetris = () => {
         level,
         setLevel
     ] = useGameStatus(rowsCleared);
-
-    // Shows when the stage is rendered
-    // console.log('re-render')
 
     const moveBlock = dir => {
         if (!checkCollision(player, stage, { x: dir, y: 0 })) {
@@ -130,22 +120,25 @@ const Tetris = () => {
             >
                 <StyledTetris>
                     <Stage stage={stage} />
-                    <aside>
-                        {gameOver ? (
-                            <Display gameOver={gameOver} text="Game Over" />
-                        ) : (
-                                < div >
-                                    {/* <Display text={`Score: ${score}`} />
-                                    <Display text={`Rows: ${rows}`} />
-                                    <Display text={`Level: ${level}`} /> */}
-                                </div>
-                            )}
-                        <StartButton callback={startGame} />
-                    </aside>
+                    <StartButton callback={startGame} />
                 </StyledTetris>
+
             </StyledTetrisWrapper >
         </>
     )
 }
 
 export default Tetris;
+
+
+{/* <aside>
+                        {gameOver ? (
+                            <Display gameOver={gameOver} text="Game Over" />
+                        ) : (
+                                < div >
+                                    <Display text={`Score: ${score}`} />
+                                    <Display text={`Rows: ${rows}`} />
+                                    <Display text={`Level: ${level}`} />
+                                </div>
+                            )}
+                    </aside> */}

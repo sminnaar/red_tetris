@@ -4,6 +4,9 @@ const socketIo = require("socket.io");
 const uuid = require('uuid/v1');
 const path = require('path');
 
+const Game = require('./classes/Game').Game
+const Player = require('./classes/Player').Player
+
 const app = express();
 
 if (process.env.NODE_ENV != 'development') {
@@ -37,19 +40,19 @@ if (process.env.NODE_ENV != 'development') {
 }
 
 const rooms = {};
+const users = {};
 
 const port = process.env.PORT || 8080;
-
 const server = http.createServer(app);
 const io = socketIo(server);
 
-/**
- * Will connect a socket to a specified room
- * @param socket A connected socket.io socket
- * @param room An object that represents a room from the `rooms` instance variable object
- */
+
+// ----------------
+
 const joinRoom = (socket, room) => {
+  console.log(room)
   room.sockets.push(socket);
+
   socket.join(room.id, () => {
     // store the room id in the socket for future use
     socket.roomId = room.id;
@@ -57,10 +60,6 @@ const joinRoom = (socket, room) => {
   });
 };
 
-/**
-* Will make the socket leave any rooms that it is a part of
-* @param socket A connected socket.io socket
-*/
 const leaveRooms = (socket) => {
   const roomsToDelete = [];
   for (const id in rooms) {
@@ -84,98 +83,35 @@ const leaveRooms = (socket) => {
   }
 };
 
-/**
-* Will check to see if we have a game winner for the room.
-* @param room An object that represents a room from the `rooms` instance variable object
-* @param sendMessage Whether or not to tell each socket if they've won or lost the game
-* @returns {boolean} true if we've found a winner. false if we haven't found a winner
-*/
-const checkScore = (room, sendMessage = false) => {
-  let winner = null;
-  for (const client of room.sockets) {
-    if (client.score >= NUM_ROUNDS) {
-      winner = client;
-      break;
-    }
-  }
+// ----------------
 
-  if (winner) {
-    if (sendMessage) {
-      for (const client of room.sockets) {
-        client.emit('gameOver', client.id === winner.id ? "You won the game!" : "You lost the game :(");
-      }
-    }
-
-    return true;
-  }
-
-  return false;
-};
-
-
-/**
- * The starting point for a user connecting to our lovely little multiplayer
- * server!
- */
 io.on('connection', (socket) => {
-
   // give each socket a random identifier so that we can determine who is who when
   // we're sending messages back and forth!
   socket.id = uuid();
   console.log(`Client ${socket.id} connected`);
 
   /**
-   * Lets us know that players have joined a room and are waiting in the waiting room.
+   * Gets fired when a player joins a room.
    */
-  socket.on('ready', () => {
-    console.log(socket.id, "is ready!");
-    const room = rooms[socket.roomId];
-    // when we have 6 players... START THE GAME!
-    if (room.sockets.length == 6) {
-      // tell each player to start the game.
-      for (const client of room.sockets) {
-        client.emit('initGame');
-      }
-    }
-  });
-
-  /**
-   * Gets fired when someone wants to get the list of rooms. respond with the list of room names.
-   */
-  socket.on('getRoomNames', (data, callback) => {
-    const roomNames = [];
-    for (const id in rooms) {
-      const { name } = rooms[id];
-      const room = { name, id };
-      roomNames.push(room);
-    }
-    console.log(roomNames)
-    callback(roomNames);
-  });
-
-  /**
-   * Gets fired when a user wants to create a new room.
-   */
-  socket.on('createRoom', (roomName, callback) => {
-    const room = {
-      id: uuid(), // generate a unique id for the new room, that way we don't need to deal with duplicates.
-      name: roomName,
-      sockets: []
+  socket.on('joinRoom', (roomName, userName, callback) => {
+    const user = {
+      id: uuid(),
+      name: userName,
     };
-    // rooms[room.id] = room;
-    rooms[room.name] = room;
-
-    // have the socket join the room they've just created.
-    joinRoom(socket, room);
-    callback();
-  });
-
-  /**
-   * Gets fired when a player has joined a room.
-   */
-  socket.on('joinRoom', (roomName, callback) => {
-    const room = rooms[roomName];
-    joinRoom(socket, room);
+    users[user.name] = new Player(user, user.id, user.name, null);
+    if (!rooms[roomName]) {
+      room = {
+        id: uuid(),
+        name: roomName,
+        sockets: []
+      };
+      rooms[room.name] = new Game(room, room.id, room.name, room.sockets);
+      joinRoom(socket, room);
+    } else {
+      room = rooms[roomName];
+      joinRoom(socket, room);
+    }
     callback();
   });
 
@@ -190,7 +126,7 @@ io.on('connection', (socket) => {
    * Gets fired when a player disconnects from the server.
    */
   socket.on('disconnect', () => {
-    console.log('user disconnected');
+    console.log(`Client ${socket.id} disconnected`);
     leaveRooms(socket);
   });
 
