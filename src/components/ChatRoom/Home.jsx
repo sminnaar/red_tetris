@@ -13,7 +13,8 @@ const Home = () => {
 
 
   const handleRoomNameChange = (event) => {
-    setRoomName(event.target.value);
+    if (event.target.value)
+      setRoomName(event.target.value);
   };
 
   return (

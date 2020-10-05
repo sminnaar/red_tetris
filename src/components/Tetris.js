@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import { createStage, checkCollision } from '../lib/helpers'
 
@@ -28,7 +28,6 @@ import socketIOClient from "socket.io-client";
 
 const Tetris = (props) => {
 
-    // console.log(props)
     const url = props.location.pathname;
     // console.log(url)
     const room = url.substring(1, url.indexOf('['));
@@ -58,11 +57,13 @@ const Tetris = (props) => {
     ] = useGameStatus(rowsCleared);
 
 
-
-    const { messages, sendMessage } = useChat(room, player);
+    // UseChat is now the useGame
+    const { messages, sendMessage, sendPiece, opponentMove } = useChat(room, player);
     const [newMessage, setNewMessage] = useState("");
 
 
+    // console.log(opponentMove);
+    // console.log(stage);
 
     // Shows when the stage is rendered
     // console.log('re-render')
@@ -123,6 +124,7 @@ const Tetris = (props) => {
         // Check what inputs are used
         // To check keycode to modify controls
         // console.log(keyCode)
+
         if (!gameOver) {
             if (keyCode === 37) {
                 moveBlock(-1);
@@ -140,6 +142,12 @@ const Tetris = (props) => {
         drop();
     }, dropTime)
 
+    useEffect(() => {
+
+        sendPiece(stage);
+
+
+    }, [stage]);
 
 
     const handleNewMessageChange = (event) => {
@@ -158,7 +166,9 @@ const Tetris = (props) => {
             onKeyUp={keyUp}
         >
             <StyledTetris>
-                <Stage stage={stage} />
+                {/* {opponentMove.body ? <Stage stage={opponentMove} /> : null} */}
+                <Stage stage={opponentMove.body} id='2' />
+                <Stage stage={stage} id='1' />
                 <StartButton callback={startGame} />
 
                 <StyledAside>

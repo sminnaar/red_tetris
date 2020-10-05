@@ -13,15 +13,14 @@ const SOCKET_SERVER_URL = "http://localhost:8080";
 // console.log(player);
 
 
-const useChat = (roomId, player) => {
+const useChat = (roomId) => {
 
   // console.log(player);
   const [messages, setMessages] = useState([]);
-  const [move, setMove] = useState(player)
+  const [opponentMove, setOpponentMove] = useState([])
+  // const [move, setMove] = useState(player)
   // const { piece } = usePiece();
   const socketRef = useRef();
-
-
 
   // console.log(`Socket Ref: ${socketRef.current}`);
   // console.log(socketRef.current);
@@ -40,17 +39,20 @@ const useChat = (roomId, player) => {
     });
 
     socketRef.current.on('player move', (move) => {
+
+      console.log(move)
       const incomingMove = {
         ...move,
         ownedByCurrentUser: move.senderId === socketRef.current.id,
       };
-      setMove((move) => [...move, incomingMove]);
+      if (move.senderId != socketRef.current.id)
+        setOpponentMove(incomingMove);
     });
 
     return () => {
       socketRef.current.disconnect();
     };
-  }, [socketRef, move, roomId]);
+  }, [roomId]);
 
   const sendMessage = (messageBody) => {
     socketRef.current.emit(NEW_CHAT_MESSAGE_EVENT, {
@@ -59,7 +61,18 @@ const useChat = (roomId, player) => {
     });
   };
 
-  return { messages, sendMessage, };
+  const sendPiece = (myStage) => {
+    socketRef.current.emit('player move', {
+      body: myStage,
+      senderId: socketRef.current.id,
+    });
+  };
+
+  const sendOpponentMove = (opponentMove) => {
+    return (opponentMove);
+  }
+
+  return { messages, sendMessage, sendPiece, opponentMove };
 };
 
 export default useChat;

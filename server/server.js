@@ -54,7 +54,7 @@ io.on("connection", (socket) => {
 
   // Join a conversation
   const { roomId } = socket.handshake.query;
-  // console.log(`Server roomId: ${roomId}`);
+  console.log(`Server roomId: ${roomId}`);
   socket.join(roomId);
 
   // Listen for new messages
@@ -65,7 +65,7 @@ io.on("connection", (socket) => {
   // // Listen for new game events
   socket.on('player move', (data) => {
     console.log('Sent Player move')
-    console.log(data);
+    console.log(data.body);
     io.in(roomId).emit('player move', data);
   });
 
