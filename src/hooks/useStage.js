@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import { createStage } from '../gameHelpers'
+import { createStage } from '../lib/helpers'
 
 export const useStage = (player, resetPlayer) => {
     const [stage, setStage] = useState(createStage());
@@ -8,7 +8,6 @@ export const useStage = (player, resetPlayer) => {
 
     useEffect(() => {
         setRowsCleared(0);
-
 
         // Logic to clear rows. Use the stage to remove row from other player
         const sweepRows = newStage =>

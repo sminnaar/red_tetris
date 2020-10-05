@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-import { createStage, checkCollision } from '../gameHelpers'
+import { createStage, checkCollision } from '../lib/helpers'
 
 // Styled Components
 import { StyledTetrisWrapper, StyledTetris } from './styles/StyledTetris'
@@ -19,6 +19,12 @@ import { useGameStatus } from '../hooks/useGameStatus';
 const Tetris = () => {
     const [dropTime, setDroptime] = useState(null)
     const [gameOver, setGameOver] = useState(false)
+
+    //
+
+
+    //
+
 
     const [
         player,
@@ -40,8 +46,8 @@ const Tetris = () => {
         setLevel
     ] = useGameStatus(rowsCleared);
 
-
-    console.log('re-render')
+    // Shows when the stage is rendered
+    // console.log('re-render')
 
     const moveBlock = dir => {
         if (!checkCollision(player, stage, { x: dir, y: 0 })) {
@@ -58,7 +64,6 @@ const Tetris = () => {
         setScore(0);
         setRows(0);
         setLevel(0);
-
     }
 
     const drop = () => {
@@ -72,7 +77,7 @@ const Tetris = () => {
             updatePlayerPos({ x: 0, y: 1, collided: false })
         } else {
             if (player.pos.y < 1) {
-                console.log('GAME OVER!!!')
+                // console.log('GAME OVER!!!')
                 setGameOver(true)
                 setDroptime(null)
             }
@@ -83,20 +88,22 @@ const Tetris = () => {
     const keyUp = ({ keyCode }) => {
         if (!gameOver) {
             if (keyCode === 40) {
-                console.log("Interval On");
+                // console.log("Interval On");
                 setDroptime(1000 / (level + 1) + 200);
             }
         }
     }
 
     const dropPlayer = () => {
-        console.log("Interval Off");
+        // console.log("Interval Off");
         setDroptime(null);
         drop();
     }
 
     const move = ({ keyCode }) => {
-        console.log(keyCode)
+        // Check what inputs are used
+        // To check keycode to modify controls
+        // console.log(keyCode)
         if (!gameOver) {
             if (keyCode === 37) {
                 moveBlock(-1);
@@ -115,27 +122,29 @@ const Tetris = () => {
     }, dropTime)
 
     return (
-        <StyledTetrisWrapper
-            role="button" tabIndex="0"
-            onKeyDown={e => move(e) && console.log(e.keyCode)}
-            onKeyUp={keyUp}
-        >
-            <StyledTetris>
-                <Stage stage={stage} />
-                <aside>
-                    {gameOver ? (
-                        <Display gameOver={gameOver} text="Game Over" />
-                    ) : (
-                            < div >
-                                <Display text={`Score: ${score}`} />
-                                <Display text={`Rows: ${rows}`} />
-                                <Display text={`Level: ${level}`} />
-                            </div>
-                        )}
-                    <StartButton callback={startGame} />
-                </aside>
-            </StyledTetris>
-        </StyledTetrisWrapper >
+        <>
+            <StyledTetrisWrapper
+                role="button" tabIndex="0"
+                onKeyDown={e => move(e) && console.log(e.keyCode)}
+                onKeyUp={keyUp}
+            >
+                <StyledTetris>
+                    <Stage stage={stage} />
+                    <aside>
+                        {gameOver ? (
+                            <Display gameOver={gameOver} text="Game Over" />
+                        ) : (
+                                < div >
+                                    {/* <Display text={`Score: ${score}`} />
+                                    <Display text={`Rows: ${rows}`} />
+                                    <Display text={`Level: ${level}`} /> */}
+                                </div>
+                            )}
+                        <StartButton callback={startGame} />
+                    </aside>
+                </StyledTetris>
+            </StyledTetrisWrapper >
+        </>
     )
 }
 
