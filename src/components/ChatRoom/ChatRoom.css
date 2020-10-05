@@ -27,7 +27,7 @@
 }
 
 .new-message-input-field {
-    height: 200px;
+    height: 40px;
     max-height: 50%;
     font-size: 20px;
     padding: 8px 12px;
@@ -54,7 +54,7 @@
 }
 
 .send-message-button {
-    font-size: 28px;
+    font-size: 20px;
     font-weight: 600;
     color: white;
     background: #31a24c;

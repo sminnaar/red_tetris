@@ -7,7 +7,7 @@ const StyledStartButton = styled.button`
   margin: 0 0 20px 0;
   padding: 20px;
   min-height: 30px;
-  width: 100%;
+  /* width: 100%; */
   border-radius: 20px;
   border: none;
   color: white;
@@ -19,7 +19,7 @@ const StyledStartButton = styled.button`
 `;
 
 const StartButton = ({ callback }) => (
-    <StyledStartButton onClick={callback}>Start Game</StyledStartButton>
+  <StyledStartButton onClick={callback}>Start Game</StyledStartButton>
 );
 
 export default StartButton;

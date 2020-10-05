@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react'
 
 import { createStage } from '../lib/helpers'
 
+// import usePiece from '../hooks/usePiece'
+
 export const useStage = (player, resetPlayer) => {
+
+    // console.log(player);
     const [stage, setStage] = useState(createStage());
     const [rowsCleared, setRowsCleared] = useState(0)
 
@@ -51,5 +55,5 @@ export const useStage = (player, resetPlayer) => {
 
     }, [player, resetPlayer])
 
-    return [stage, setStage, rowsCleared]
+    return [stage, setStage, rowsCleared, player]
 }

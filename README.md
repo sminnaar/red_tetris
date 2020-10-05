@@ -7,8 +7,6 @@
 ├── src
 │   └── index.js
 └── server
-    ├── routes
-    │   └── index.js
     └── server.js
 ```
 
@@ -36,7 +34,7 @@ The 'server' folder  contains the express with socket.io server.
 
 To launch the server, run the commands below from the root of the project: 
 
-```
+```bash
 > npm install
 > npm run server
 ```
@@ -49,7 +47,7 @@ To start the application, navigate to http://localhost:3000.
 
 To execute the unit tests, run the commands below from the root of the 'client' folder: 
 
-```
+```bash
 > npm run test
 ```
 
