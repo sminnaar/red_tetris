@@ -49,7 +49,6 @@ const port = process.env.PORT || 8080;
 const rooms = {};
 const users = {};
 
-
 io.on("connection", (socket) => {
 
   console.log(`Client ${socket.id} connected`);
@@ -58,38 +57,95 @@ io.on("connection", (socket) => {
   console.log(`Server roomId: ${roomId}`);
   console.log(`Server userId: ${userId}`);
 
-  // Join a room
-  user = {
-    userId: userId,
-  };
-  // users[user.userId] = user;
-  users[user.name] = new Player(user.userid);
+  // Rooms, Users and Joining 
+  if (roomId && userId) {
+    user = {
+      socket: socket.id,
+      userId: userId,
+    };
+    users[user.userId] = new Player(user);
 
-  room = {
-    roomId: roomId
-  };
-  // rooms[room.roomId] = room;
-  rooms[room.name] = new Game(roomId);
-
-  socket.join(roomId);
+    if (!rooms[roomId]) {
+      room = {
+        roomId: roomId,
+        users: [user]
+      };
+      rooms[roomId] = new Game(room);
+      console.log("Created: ");
+      console.log(rooms[roomId]);
+      socket.join(roomId);
+    }
+    else {
+      rooms[roomId].users.push(user);
+      console.log("Added: ");
+      console.log(rooms[roomId].users);
+      socket.join(roomId);
+    }
+  }
 
   // Listen for new messages
   socket.on('chat', (data) => {
     io.in(roomId).emit('chat', data);
   });
 
-  // // Listen for new game events
+  // Listen for new game events
   socket.on('stage', (data) => {
-    console.log('Sent Player move')
-    console.log(data.body);
+    // console.log('Sent Player move')
+    // console.log(data.body);
     io.in(roomId).emit('stage', data);
   });
 
-  // Leave the room if the user closes the socket
-  socket.on("disconnect", () => {
-    console.log(`Client ${socket.id} diconnected`);
-    socket.leave(roomId);
+  // // Leave the room if the user closes the socket
+  // socket.on("disconnect", () => {
+  //   console.log(`Client ${socket.id} diconnected`);
+  //   socket.leave(roomId);
+  // });
+
+
+
+  socket.on('disconnect', () => {
+    console.log(`Client ${socket.id} disconnected`);
+
+    const roomsToDelete = [];
+
+    for (const roomId in rooms) {
+      var room = rooms[roomId];
+
+      // check to see if the socket is in the current room
+      // if (room.users.includes(socket)) {
+      if (room.users.some(user => user.socket === socket.id)) {
+
+        room.users = room.users.filter((user) => user.socket !== socket.id);
+
+        console.log("Left: ");
+        console.log(rooms[roomId].users);
+
+        socket.leave(roomId);
+        console.log("Object found inside the array.");
+      } else {
+        console.log("Object NOT found inside the array.");
+      }
+
+      // remove the socket from the room object
+      // room.sockets = room.sockets.filter((item) => item !== socket);
+    }
+    // Prepare to delete any rooms that are now empty
+    console.log(room.users.length === 0);
+    console.log(room);
+    if (room.users.length == 0) {
+      console.log("EMPTY found")
+      roomsToDelete.push(room);
+    }
+    // Delete all the empty rooms that we found earlier
+    for (const room of roomsToDelete) {
+      console.log("DELTING:")
+      console.log(rooms[room.roomId]);
+      console.log("ROOMS:")
+      delete rooms[room.roomId];
+    }
+    console.log(rooms);
   });
+
 });
 
 server.listen(port, () => console.log(`Listening on port ${port}`));
