@@ -50,8 +50,6 @@ const rooms = {};
 const users = {};
 
 
-const NEW_CHAT_MESSAGE_EVENT = "newChatMessage";
-
 io.on("connection", (socket) => {
 
   console.log(`Client ${socket.id} connected`);
@@ -76,21 +74,16 @@ io.on("connection", (socket) => {
   socket.join(roomId);
 
   // Listen for new messages
-  socket.on(NEW_CHAT_MESSAGE_EVENT, (data) => {
-    io.in(roomId).emit(NEW_CHAT_MESSAGE_EVENT, data);
+  socket.on('chat', (data) => {
+    io.in(roomId).emit('chat', data);
   });
 
   // // Listen for new game events
-  socket.on('player move', (data) => {
+  socket.on('stage', (data) => {
     console.log('Sent Player move')
     console.log(data.body);
-    io.in(roomId).emit('player move', data);
+    io.in(roomId).emit('stage', data);
   });
-
-  // // Listen for new players
-  // socket.on(NEW_PLAYER_JOINED_EVENT, (data) => {
-  //   io.in(roomId).emit(NEW_PLAYER_JOINED_EVENT, data);
-  // });
 
   // Leave the room if the user closes the socket
   socket.on("disconnect", () => {

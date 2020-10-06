@@ -1,13 +1,8 @@
 import React from 'react';
 
+import Home from './components/Home'
 import Tetris from './components/Tetris'
-import Join from './components/Join';
 import { HashRouter as Router, Route } from 'react-router-dom';
-
-// import Chat from './components/Chat'
-
-import ChatRoom from './components/ChatRoom/ChatRoom'
-import Home from './components/ChatRoom/Home'
 
 function App() {
   return (

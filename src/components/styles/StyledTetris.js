@@ -1,21 +1,9 @@
 import styled from 'styled-components'
 
-// import bgImage from '../../img/bg.jpg'
-/* background: url(${bgImage}) #000; */
-
-
 export const StyledTetrisWrapper = styled.div`
     width: 100vw;
     height: 100vh;
-    /* background: #000; */
-    background-size: cover;
-    overflow: hidden;
-`
-
-export const StyledChat = styled.div`
-    /* width: 100vw; */
-    /* height: 100vh; */
-    /* background: #000; */
+    background: grey;
     background-size: cover;
     overflow: hidden;
 `

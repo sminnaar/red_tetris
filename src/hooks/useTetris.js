@@ -1,36 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import socketIOClient from "socket.io-client";
 
-// import { usePlayer } from './usePlayer';
-
-// import { useStage } from './useStage';
-
-
-const NEW_CHAT_MESSAGE_EVENT = "newChatMessage";
 const SOCKET_SERVER_URL = "http://localhost:8080";
 
-// const [player] = usePlayer();
-// console.log(player);
+export const useTetris = (roomId, userId) => {
 
-
-const useChat = (roomId, userId) => {
-
-  // console.log(player);
   const [messages, setMessages] = useState([]);
-  const [opponentMove, setOpponentMove] = useState([])
-  // const [move, setMove] = useState(player)
-  // const { piece } = usePiece();
-  const socketRef = useRef();
+  const [opponentStage, setOpponentMove] = useState([])
 
-  // console.log(`Socket Ref: ${socketRef.current}`);
-  // console.log(socketRef.current);
+  const socketRef = useRef();
 
   useEffect(() => {
     socketRef.current = socketIOClient(SOCKET_SERVER_URL, {
       query: { roomId, userId },
     });
 
-    socketRef.current.on(NEW_CHAT_MESSAGE_EVENT, (message) => {
+    socketRef.current.on('chat', (message) => {
       const incomingMessage = {
         ...message,
         ownedByCurrentUser: message.senderId === socketRef.current.id,
@@ -38,8 +23,7 @@ const useChat = (roomId, userId) => {
       setMessages((messages) => [...messages, incomingMessage]);
     });
 
-    socketRef.current.on('player move', (move) => {
-
+    socketRef.current.on('stage', (move) => {
       console.log(move)
       const incomingMove = {
         ...move,
@@ -55,24 +39,20 @@ const useChat = (roomId, userId) => {
   }, [roomId]);
 
   const sendMessage = (messageBody) => {
-    socketRef.current.emit(NEW_CHAT_MESSAGE_EVENT, {
+    socketRef.current.emit('chat', {
       body: messageBody,
       senderId: socketRef.current.id,
     });
   };
 
-  const sendPiece = (myStage) => {
-    socketRef.current.emit('player move', {
+  const sendStage = (myStage) => {
+    socketRef.current.emit('stage', {
       body: myStage,
       senderId: socketRef.current.id,
     });
   };
 
-  const sendOpponentMove = (opponentMove) => {
-    return (opponentMove);
-  }
-
-  return { messages, sendMessage, sendPiece, opponentMove };
+  return { messages, sendMessage, sendStage, opponentStage };
 };
 
-export default useChat;
+// export default useTetris;
