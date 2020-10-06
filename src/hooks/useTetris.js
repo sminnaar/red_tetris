@@ -8,10 +8,7 @@ export const useTetris = (roomId, userId) => {
   const [messages, setMessages] = useState([]);
   const [opponentStage, setOpponentMove] = useState([])
 
-
   const [fullTest, setFullTest] = useState(false)
-
-
 
   const socketRef = useRef();
 
@@ -46,7 +43,17 @@ export const useTetris = (roomId, userId) => {
     return () => {
       socketRef.current.disconnect();
     };
+
   }, [roomId, fullTest]);
+
+  // socketRef.current.on('full', () => {
+  // setFullTest(true);
+
+  // const checkFull = (messageBody) => {
+  //   socketRef.current.emit('full', {
+
+  //   });
+  // };
 
   const sendMessage = (messageBody) => {
     socketRef.current.emit('chat', {

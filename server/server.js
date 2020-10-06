@@ -77,25 +77,38 @@ io.on("connection", (socket) => {
     }
     else {
       if (rooms[roomId].users.length === 2) {
-        socket.emit('full', () => {
-          console.log("full")
+
+        console.log("full")
+        socket.emit('full', (data) => {
+          // sending to individual socketid (private message)
+          io.to(socket.id).emit('full', 'VOL, FOkkOF');
         })
       } else {
         rooms[roomId].users.push(user);
         socket.join(roomId);
-        // console.log("Added: ");
-        // console.log(rooms[roomId].users);
+        console.log("Added: ");
+        console.log(rooms[roomId].users);
       }
     }
   }
 
-  // Listen for pongs
-  socket.on('pong', () => {
-    // io.in(roomId).emit('ping', data);
-    console.log("PONG")
-    io.emit('ping');
-    console.log("PING")
-  });
+  // // Listen for pongs
+  // socket.on('pong', () => {
+  //   // io.in(roomId).emit('ping', data);
+  //   console.log("PONG")
+  //   io.emit('ping');
+  //   console.log("PING")
+  // });
+
+  // // Listen for pongs
+  // socket.on('full', () => {
+  //   if (rooms[roomId].users.length === 2) {
+  //     console.log("full")
+  //     socket.emit('full', (data) => {
+  //       // sending to individual socketid (private message)
+  //       io.to(socket.id).emit('full', 'VOL, FOkkOF');
+  //     })
+  // });
 
   // Listen for new messages
   socket.on('chat', (data) => {
@@ -141,7 +154,7 @@ io.on("connection", (socket) => {
         // console.log("ROOMS:")
         delete rooms[room.roomId];
       }
-      // console.log(rooms);
+      console.log(rooms);
 
     }
 
