@@ -78,7 +78,7 @@ io.on("connection", (socket) => {
     else {
       if (rooms[roomId].users.length === 2) {
         socket.emit('full', () => {
-          // asdlfkj
+          console.log("full")
         })
       } else {
         rooms[roomId].users.push(user);
@@ -88,6 +88,14 @@ io.on("connection", (socket) => {
       }
     }
   }
+
+  // Listen for pongs
+  socket.on('pong', () => {
+    // io.in(roomId).emit('ping', data);
+    console.log("PONG")
+    io.emit('ping');
+    console.log("PING")
+  });
 
   // Listen for new messages
   socket.on('chat', (data) => {
@@ -104,35 +112,42 @@ io.on("connection", (socket) => {
   socket.on('disconnect', () => {
     console.log(`Client ${socket.id} disconnected`);
 
-    const roomsToDelete = [];
-    for (const roomId in rooms) {
-      var room = rooms[roomId];
-      // check to see if the socket is in the current room
-      // if (room.users.includes(socket)) {
-      if (room.users.some(user => user.socket === socket.id)) {
-        room.users = room.users.filter((user) => user.socket !== socket.id);
-        socket.leave(roomId);
-        // console.log("Left: ");
-        // console.log(rooms[roomId].users);
-        // console.log("Object found inside the array.");
+    if (roomId && userId) {
+
+      const roomsToDelete = [];
+      for (const roomId in rooms) {
+        var room = rooms[roomId];
+        // check to see if the socket is in the current room
+        // if (room.users.includes(socket)) {
+        if (room.users.some(user => user.socket === socket.id)) {
+          room.users = room.users.filter((user) => user.socket !== socket.id);
+          socket.leave(roomId);
+          // console.log("Left: ");
+          // console.log(rooms[roomId].users);
+          // console.log("Object found inside the array.");
+        }
       }
+      // Prepare to delete any rooms that are now empty
+      // console.log(room.users.length === 0);
+      // console.log(room);
+      if (room.users.length == 0) {
+        // console.log("EMPTY found")
+        roomsToDelete.push(room);
+      }
+      // Delete all the empty rooms that we found earlier
+      for (const room of roomsToDelete) {
+        // console.log("DELTING:")
+        // console.log(rooms[room.roomId]);
+        // console.log("ROOMS:")
+        delete rooms[room.roomId];
+      }
+      // console.log(rooms);
+
     }
-    // Prepare to delete any rooms that are now empty
-    // console.log(room.users.length === 0);
-    // console.log(room);
-    if (room.users.length == 0) {
-      // console.log("EMPTY found")
-      roomsToDelete.push(room);
-    }
-    // Delete all the empty rooms that we found earlier
-    for (const room of roomsToDelete) {
-      // console.log("DELTING:")
-      // console.log(rooms[room.roomId]);
-      // console.log("ROOMS:")
-      delete rooms[room.roomId];
-    }
-    // console.log(rooms);
+
   });
+
+
 
 });
 

@@ -8,6 +8,11 @@ export const useTetris = (roomId, userId) => {
   const [messages, setMessages] = useState([]);
   const [opponentStage, setOpponentMove] = useState([])
 
+
+  const [fullTest, setFullTest] = useState(false)
+
+
+
   const socketRef = useRef();
 
   useEffect(() => {
@@ -24,7 +29,7 @@ export const useTetris = (roomId, userId) => {
     });
 
     socketRef.current.on('stage', (move) => {
-      console.log(move)
+      // console.log(move)
       const incomingMove = {
         ...move,
         ownedByCurrentUser: move.senderId === socketRef.current.id,
@@ -33,10 +38,15 @@ export const useTetris = (roomId, userId) => {
         setOpponentMove(incomingMove);
     });
 
+    socketRef.current.on('full', () => {
+      setFullTest(true);
+    });
+
+
     return () => {
       socketRef.current.disconnect();
     };
-  }, [roomId]);
+  }, [roomId, fullTest]);
 
   const sendMessage = (messageBody) => {
     socketRef.current.emit('chat', {
@@ -52,7 +62,6 @@ export const useTetris = (roomId, userId) => {
     });
   };
 
-  return { messages, sendMessage, sendStage, opponentStage };
-};
 
-// export default useTetris;
+  return { fullTest, messages, sendMessage, sendStage, opponentStage };
+};

@@ -5,37 +5,37 @@ const SOCKET_SERVER_URL = "http://localhost:8080";
 
 const useLobby = (roomId) => {
 
-    const [joined, setJoined] = useState(false);
+    const [error, setError] = useState('');
+
     const socketRef = useRef();
 
     useEffect(() => {
+
+        // setError('Room')
         socketRef.current = socketIOClient(SOCKET_SERVER_URL, {
             query: { roomId },
         });
 
-        // socketRef.current.on('joinRoom', (error, data) => {
-        //     if (error) {
-        //         setJoined(false);
-        //     }
-        //     else if (data) {
-        //         setJoined(true);
-        //     }
-        // });
+        socketRef.current.on("ping", () => {
+            setError("ping")
+            console.log('Pinging')
+        });
 
         return () => {
             socketRef.current.disconnect();
         };
-        // }, []);
-    }, [roomId]);
+    }, [error, roomId]);
 
-    const joinRoom = (roomName, userName) => {
-        socketRef.current.emit('joinRoom', roomName, userName, () => {
-            setJoined(true);
-            console.log('Joined!')
+
+    const pong = () => {
+        console.log('Ponging')
+        socketRef.current.emit('pong', () => {
+            setError("pong")
         });
     };
 
-    return { joined, joinRoom };
+
+    return { error, pong };
 };
 
 export default useLobby;

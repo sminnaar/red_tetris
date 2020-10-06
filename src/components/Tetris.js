@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Redirect } from 'react-router-dom';
 
 import { createStage, checkCollision } from '../lib/helpers'
 
@@ -28,8 +29,10 @@ const Tetris = (props) => {
     const room = url.substring(1, url.indexOf('['));
     const user = url.substring((url.indexOf('[') + 1), url.indexOf(']'));
 
+    // const [full, setFull] = useState(false)
     const [dropTime, setDroptime] = useState(null)
     const [gameOver, setGameOver] = useState(false)
+
 
     const [
         player,
@@ -53,7 +56,7 @@ const Tetris = (props) => {
 
 
     // UseChat is now the useGame
-    const { messages, sendMessage, sendStage, opponentStage } = useTetris(room, user);
+    const { fullTest, messages, sendMessage, sendStage, opponentStage } = useTetris(room, user);
     const [newMessage, setNewMessage] = useState("");
 
     const moveBlock = dir => {
@@ -134,75 +137,79 @@ const Tetris = (props) => {
 
     useEffect(() => {
 
-
-
-
-
-
         sendStage(stage);
-
-
-
-
 
     }, [stage]);
 
+    if (fullTest) {
+        return (
+            <Redirect
+                to={{ pathname: '/', state: { error: 'Room full' } }}
+            />
+            // <Redirect
+            //     to={{
+            //         pathname: `/${room}[${name}]`,
+            //         state: { room: room, name: name }
+            //     }}
+            // />
+        )
+    } else {
+        return (
+            <><StyledTetrisWrapper
+                role="button" tabIndex="0"
+                onKeyDown={e => move(e) && console.log(e.keyCode)}
+                onKeyUp={keyUp}
+            >
+                <StyledTetris>
+                    {/* {opponentMove.body ? <Stage stage={opponentMove} /> : null} */}
+                    <Stage stage={stage} id='1' />
 
-    return (
-        <><StyledTetrisWrapper
-            role="button" tabIndex="0"
-            onKeyDown={e => move(e) && console.log(e.keyCode)}
-            onKeyUp={keyUp}
-        >
-            <StyledTetris>
-                {/* {opponentMove.body ? <Stage stage={opponentMove} /> : null} */}
-                <Stage stage={stage} id='1' />
+                    <StyledPanel>
+                        {gameOver ? (
+                            <Display gameOver={gameOver} text="Game Over" />
+                        ) : (
+                                < div >
 
-                <StyledPanel>
-                    {gameOver ? (
-                        <Display gameOver={gameOver} text="Game Over" />
-                    ) : (
-                            < div >
-
-                                {/* <Display gameOver={gameOver} text={room} /> */}
-                                <StartButton callback={startGame} />
-                                <h3 className="room-name">Room: {room}</h3>
-                                <h3 className="room-name">User: {user}</h3>
-                                <div className="messages-container">
-                                    <ol className="messages-list">
-                                        {messages.map((message, i) => (
-                                            <li
-                                                key={i}
-                                                className={`message-item ${message.ownedByCurrentUser ? "my-message" : "received-message"
-                                                    }`}
-                                            >
-                                                {message.body}
-                                            </li>
-                                        ))}
-                                    </ol>
-                                </div>
-                                <textarea
-                                    value={newMessage}
-                                    onChange={handleNewMessageChange}
-                                    placeholder="Write message..."
-                                    className="new-message-input-field"
-                                />
-                                <button onClick={handleSendMessage} className="send-message-button">
-                                    Send
+                                    {/* <Display gameOver={gameOver} text={room} /> */}
+                                    <StartButton callback={startGame} />
+                                    <h3 className="room-name">Room: {room}</h3>
+                                    <h3 className="room-name">User: {user}</h3>
+                                    <div className="messages-container">
+                                        <ol className="messages-list">
+                                            {messages.map((message, i) => (
+                                                <li
+                                                    key={i}
+                                                    className={`message-item ${message.ownedByCurrentUser ? "my-message" : "received-message"
+                                                        }`}
+                                                >
+                                                    {message.body}
+                                                </li>
+                                            ))}
+                                        </ol>
+                                    </div>
+                                    <textarea
+                                        value={newMessage}
+                                        onChange={handleNewMessageChange}
+                                        placeholder="Write message..."
+                                        className="new-message-input-field"
+                                    />
+                                    <button onClick={handleSendMessage} className="send-message-button">
+                                        Send
                                     </button>
-                            </div>
-                        )}
-                </StyledPanel>
+                                </div>
+                            )}
+                    </StyledPanel>
 
 
-                <Stage stage={opponentStage.body} id='2' />
+                    <Stage stage={opponentStage.body} id='2' />
 
 
 
-            </StyledTetris>
-        </StyledTetrisWrapper >
-        </>
-    )
+                </StyledTetris>
+            </StyledTetrisWrapper >
+            </>
+        )
+    }
 }
 
 export default Tetris;

@@ -14,12 +14,26 @@ export const StyledHome = styled.div`
     transform: translate(0, -50%);
     display: flex;
     flex-direction: column;
-    background-color: black;
+    // background-color: grey;
     padding: 40px;
     
 `
+export const StyledJoinButton = styled.div`
 
-
+  margin-top: 20px;
+    padding: 24px 12px;
+    font-size: 28px;
+    background: grey;
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 7px;
+    
+`
+// .enter-room-button {
+//   
+// }
 
 // .container {
 //     position: fixed;
@@ -45,16 +59,4 @@ export const StyledHome = styled.div`
 
 // .text-input-field:focus {
 //     outline: none;
-// }
-
-// .enter-room-button {
-//     margin-top: 20px;
-//     padding: 24px 12px;
-//     font-size: 28px;
-//     background: grey;
-//     color: white;
-//     font-weight: 600;
-//     text-align: center;
-//     text-decoration: none;
-//     border-radius: 7px;
 // }
