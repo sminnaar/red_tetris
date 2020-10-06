@@ -1,3 +1,9 @@
+
+.container {
+    position: fixed;
+    background-color: black;
+}
+
 .home-container {
     position: fixed;
     left: 10%;
@@ -6,6 +12,7 @@
     transform: translate(0, -50%);
     display: flex;
     flex-direction: column;
+    background-color: black;
 }
 
 .text-input-field {
@@ -22,7 +29,7 @@
     margin-top: 20px;
     padding: 24px 12px;
     font-size: 28px;
-    background: #31a24c;
+    background: grey;
     color: white;
     font-weight: 600;
     text-align: center;

@@ -76,10 +76,16 @@ io.on("connection", (socket) => {
       socket.join(roomId);
     }
     else {
-      rooms[roomId].users.push(user);
-      console.log("Added: ");
-      console.log(rooms[roomId].users);
-      socket.join(roomId);
+      if (rooms[roomId].users.length === 2) {
+        socket.emit('full', () => {
+          // asdlfkj
+        })
+      } else {
+        rooms[roomId].users.push(user);
+        socket.join(roomId);
+        // console.log("Added: ");
+        // console.log(rooms[roomId].users);
+      }
     }
   }
 
@@ -95,55 +101,37 @@ io.on("connection", (socket) => {
     io.in(roomId).emit('stage', data);
   });
 
-  // // Leave the room if the user closes the socket
-  // socket.on("disconnect", () => {
-  //   console.log(`Client ${socket.id} diconnected`);
-  //   socket.leave(roomId);
-  // });
-
-
-
   socket.on('disconnect', () => {
     console.log(`Client ${socket.id} disconnected`);
 
     const roomsToDelete = [];
-
     for (const roomId in rooms) {
       var room = rooms[roomId];
-
       // check to see if the socket is in the current room
       // if (room.users.includes(socket)) {
       if (room.users.some(user => user.socket === socket.id)) {
-
         room.users = room.users.filter((user) => user.socket !== socket.id);
-
-        console.log("Left: ");
-        console.log(rooms[roomId].users);
-
         socket.leave(roomId);
-        console.log("Object found inside the array.");
-      } else {
-        console.log("Object NOT found inside the array.");
+        // console.log("Left: ");
+        // console.log(rooms[roomId].users);
+        // console.log("Object found inside the array.");
       }
-
-      // remove the socket from the room object
-      // room.sockets = room.sockets.filter((item) => item !== socket);
     }
     // Prepare to delete any rooms that are now empty
-    console.log(room.users.length === 0);
-    console.log(room);
+    // console.log(room.users.length === 0);
+    // console.log(room);
     if (room.users.length == 0) {
-      console.log("EMPTY found")
+      // console.log("EMPTY found")
       roomsToDelete.push(room);
     }
     // Delete all the empty rooms that we found earlier
     for (const room of roomsToDelete) {
-      console.log("DELTING:")
-      console.log(rooms[room.roomId]);
-      console.log("ROOMS:")
+      // console.log("DELTING:")
+      // console.log(rooms[room.roomId]);
+      // console.log("ROOMS:")
       delete rooms[room.roomId];
     }
-    console.log(rooms);
+    // console.log(rooms);
   });
 
 });
