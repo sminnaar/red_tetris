@@ -49,9 +49,6 @@ const port = process.env.PORT || 8080;
 const rooms = {};
 const users = {};
 
-
-const NEW_CHAT_MESSAGE_EVENT = "newChatMessage";
-
 io.on("connection", (socket) => {
 
   console.log(`Client ${socket.id} connected`);
@@ -60,43 +57,111 @@ io.on("connection", (socket) => {
   console.log(`Server roomId: ${roomId}`);
   console.log(`Server userId: ${userId}`);
 
-  // Join a room
-  user = {
-    userId: userId,
-  };
-  // users[user.userId] = user;
-  users[user.name] = new Player(user.userid);
+  // Rooms, Users and Joining 
+  if (roomId && userId) {
+    user = {
+      socket: socket.id,
+      userId: userId,
+    };
+    users[user.userId] = new Player(user);
 
-  room = {
-    roomId: roomId
-  };
-  // rooms[room.roomId] = room;
-  rooms[room.name] = new Game(roomId);
+    if (!rooms[roomId]) {
+      room = {
+        roomId: roomId,
+        users: [user]
+      };
+      rooms[roomId] = new Game(room);
+      console.log("Created: ");
+      console.log(rooms[roomId]);
+      socket.join(roomId);
+    }
+    else {
+      if (rooms[roomId].users.length === 2) {
 
-  socket.join(roomId);
+        console.log("full")
+        socket.emit('full', (data) => {
+          // sending to individual socketid (private message)
+          io.to(socket.id).emit('full', 'VOL, FOkkOF');
+        })
+      } else {
+        rooms[roomId].users.push(user);
+        socket.join(roomId);
+        console.log("Added: ");
+        console.log(rooms[roomId].users);
+      }
+    }
+  }
 
-  // Listen for new messages
-  socket.on(NEW_CHAT_MESSAGE_EVENT, (data) => {
-    io.in(roomId).emit(NEW_CHAT_MESSAGE_EVENT, data);
-  });
-
-  // // Listen for new game events
-  socket.on('player move', (data) => {
-    console.log('Sent Player move')
-    console.log(data.body);
-    io.in(roomId).emit('player move', data);
-  });
-
-  // // Listen for new players
-  // socket.on(NEW_PLAYER_JOINED_EVENT, (data) => {
-  //   io.in(roomId).emit(NEW_PLAYER_JOINED_EVENT, data);
+  // // Listen for pongs
+  // socket.on('pong', () => {
+  //   // io.in(roomId).emit('ping', data);
+  //   console.log("PONG")
+  //   io.emit('ping');
+  //   console.log("PING")
   // });
 
-  // Leave the room if the user closes the socket
-  socket.on("disconnect", () => {
-    console.log(`Client ${socket.id} diconnected`);
-    socket.leave(roomId);
+  // // Listen for pongs
+  // socket.on('full', () => {
+  //   if (rooms[roomId].users.length === 2) {
+  //     console.log("full")
+  //     socket.emit('full', (data) => {
+  //       // sending to individual socketid (private message)
+  //       io.to(socket.id).emit('full', 'VOL, FOkkOF');
+  //     })
+  // });
+
+  // Listen for new messages
+  socket.on('chat', (data) => {
+    io.in(roomId).emit('chat', data);
   });
+
+  // Listen for new game events
+  socket.on('stage', (data) => {
+    // console.log('Sent Player move')
+    // console.log(data.body);
+    io.in(roomId).emit('stage', data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`Client ${socket.id} disconnected`);
+
+    if (roomId && userId) {
+
+      const roomsToDelete = [];
+      for (const roomId in rooms) {
+        var room = rooms[roomId];
+        // check to see if the socket is in the current room
+        // if (room.users.includes(socket)) {
+        if (room.users.some(user => user.socket === socket.id)) {
+          room.users = room.users.filter((user) => user.socket !== socket.id);
+          socket.leave(roomId);
+          // console.log("Left: ");
+          // console.log(rooms[roomId].users);
+          // console.log("Object found inside the array.");
+        }
+      }
+      // Prepare to delete any rooms that are now empty
+      // console.log(room.users.length === 0);
+      // console.log(room);
+      if (room.users.length == 0) {
+        // console.log("EMPTY found")
+        roomsToDelete.push(room);
+      }
+      // Delete all the empty rooms that we found earlier
+      for (const room of roomsToDelete) {
+        // console.log("DELTING:")
+        // console.log(rooms[room.roomId]);
+        // console.log("ROOMS:")
+        delete rooms[room.roomId];
+      }
+      console.log(rooms);
+
+    }
+
+  });
+
+
+
 });
 
 server.listen(port, () => console.log(`Listening on port ${port}`));

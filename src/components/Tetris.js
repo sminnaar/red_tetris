@@ -1,38 +1,46 @@
 import React, { useState, useEffect } from 'react'
+import { Redirect } from 'react-router-dom';
 
 import { createStage, checkCollision } from '../lib/helpers'
 
 // Styled Components
 import { StyledTetrisWrapper, StyledTetris, StyledAside } from './styles/StyledTetris'
 
-import "../components/ChatRoom/ChatRoom.css";
+import { StyledPanel, StyledInput } from './styles/StyledPanel'
+
+import "../components/Chat.css";
 
 // Components
 import Stage from './Stage'
 import Display from './Display'
 import StartButton from './StartButton'
 
-import Chat from './Chat'
-import ChatRoom from './ChatRoom/ChatRoom'
-
 // Custom Hooks
 import { useInterval } from '../hooks/useInterval'
 import { usePlayer } from '../hooks/usePlayer'
 import { useStage } from '../hooks/useStage'
-import { useGameStatus } from '../hooks/useGameStatus';
-import useChat from '../hooks/useChat';
-
-
-import socketIOClient from "socket.io-client";
-
+import { useStatus } from '../hooks/useStatus';
+import { useTetris } from '../hooks/useTetris';
 
 const Tetris = (props) => {
-
     const url = props.location.pathname;
-    // console.log(url)
+
     const room = url.substring(1, url.indexOf('['));
     const user = url.substring((url.indexOf('[') + 1), url.indexOf(']'));
 
+    const { fullTest, messages, sendMessage, sendStage, opponentStage } = useTetris(room, user);
+    const [newMessage, setNewMessage] = useState("");
+
+    const handleNewMessageChange = (event) => {
+        setNewMessage(event.target.value);
+    };
+
+    const handleSendMessage = () => {
+        sendMessage(newMessage);
+        setNewMessage("");
+    };
+
+    // const [full, setFull] = useState(false)
     const [dropTime, setDroptime] = useState(null)
     const [gameOver, setGameOver] = useState(false)
 
@@ -54,19 +62,8 @@ const Tetris = (props) => {
         setRows,
         level,
         setLevel
-    ] = useGameStatus(rowsCleared);
+    ] = useStatus(rowsCleared);
 
-
-    // UseChat is now the useGame
-    const { messages, sendMessage, sendPiece, opponentMove } = useChat(room, user);
-    const [newMessage, setNewMessage] = useState("");
-
-
-    // console.log(opponentMove);
-    // console.log(stage);
-
-    // Shows when the stage is rendered
-    // console.log('re-render')
 
     const moveBlock = dir => {
         if (!checkCollision(player, stage, { x: dir, y: 0 })) {
@@ -83,16 +80,9 @@ const Tetris = (props) => {
         setScore(0);
         setRows(0);
         setLevel(0);
-
     }
 
     const drop = () => {
-        // Level Up when player has cleared 10 rows
-        if (rows > (level + 1) * 10) {
-            setLevel(prev => prev + 1);
-            // Increase speed
-            setDroptime(1000 / (level + 1) + 200);
-        }
         if (!checkCollision(player, stage, { x: 0, y: 1 })) {
             updatePlayerPos({ x: 0, y: 1, collided: false })
         } else {
@@ -124,7 +114,6 @@ const Tetris = (props) => {
         // Check what inputs are used
         // To check keycode to modify controls
         // console.log(keyCode)
-
         if (!gameOver) {
             if (keyCode === 37) {
                 moveBlock(-1);
@@ -138,49 +127,59 @@ const Tetris = (props) => {
         }
     };
 
+
     useInterval(() => {
         drop();
     }, dropTime)
 
     useEffect(() => {
 
-        sendPiece(stage);
+        sendStage(stage);
 
+    }, [stage, fullTest]);
 
-    }, [stage]);
+    if (fullTest) {
+        return (
+            <Redirect
+                to={{ pathname: '/', state: { error: 'Room full' } }}
+            />
+            // <Redirect
+            //     to={{
+            //         // pathname: `/${room}[${name}]`,
+            //         pathname: '/',
+            //         state: {
+            //             error: 'VOL, FOKKOF'
+            //             // error: fullTest
+            //             // room: room,
+            //             // name: name
+            //         }
+            //     }}
+            // />
 
+        )
+    } else {
+        return (
+            <><StyledTetrisWrapper
+                role="button" tabIndex="0"
+                onKeyDown={e => move(e) && console.log(e.keyCode)}
+                onKeyUp={keyUp}
+            >
 
-    const handleNewMessageChange = (event) => {
-        setNewMessage(event.target.value);
-    };
+                <StyledTetris>
+                    {/* {opponentMove.body ? <Stage stage={opponentMove} /> : null} */}
+                    <Stage stage={stage} id='1' />
 
-    const handleSendMessage = () => {
-        sendMessage(newMessage);
-        setNewMessage("");
-    };
+                    <StyledPanel>
+                        <StartButton callback={startGame} />
 
-    return (
-        <><StyledTetrisWrapper
-            role="button" tabIndex="0"
-            onKeyDown={e => move(e) && console.log(e.keyCode)}
-            onKeyUp={keyUp}
-        >
-            <StyledTetris>
-                {/* {opponentMove.body ? <Stage stage={opponentMove} /> : null} */}
-                <Stage stage={opponentMove.body} id='2' />
-                <Stage stage={stage} id='1' />
-                <StartButton callback={startGame} />
-
-                <StyledAside>
-                    <aside>
+                        <h3 className="room-name">Room: {room}</h3>
+                        <h3 className="room-name">User: {user}</h3>
                         {gameOver ? (
                             <Display gameOver={gameOver} text="Game Over" />
                         ) : (
-                                < div >
-                                    {/* <StartButton callback={startGame} /> */}
 
-                                    {/* <h1 className="room-name">Room: {room}</h1> */}
-                                    <h1 className="room-name">User: {user}</h1>
+
+                                < div >
                                     <div className="messages-container">
                                         <ol className="messages-list">
                                             {messages.map((message, i) => (
@@ -194,23 +193,32 @@ const Tetris = (props) => {
                                             ))}
                                         </ol>
                                     </div>
-                                    <textarea
-                                        value={newMessage}
-                                        onChange={handleNewMessageChange}
-                                        placeholder="Write message..."
-                                        className="new-message-input-field"
-                                    />
-                                    <button onClick={handleSendMessage} className="send-message-button">
-                                        Send
+
+                                    <StyledInput>
+                                        <textarea
+                                            value={newMessage}
+                                            onChange={handleNewMessageChange}
+                                            placeholder="Write message..."
+                                            className="new-message-input-field"
+                                        />
+                                        <button onClick={handleSendMessage} className="send-message-button">
+                                            Send
                                     </button>
+                                    </StyledInput>
                                 </div>
                             )}
-                    </aside>
-                </StyledAside>
-            </StyledTetris>
-        </StyledTetrisWrapper >
-        </>
-    )
+                    </StyledPanel>
+
+
+                    <Stage stage={opponentStage.body} id='2' />
+
+
+                </StyledTetris>
+
+            </StyledTetrisWrapper >
+            </>
+        )
+    }
 }
 
 export default Tetris;

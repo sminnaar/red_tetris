@@ -1,13 +1,8 @@
 import React from 'react';
 
+import Home from './components/Home'
 import Tetris from './components/Tetris'
-import Join from './components/Join';
 import { HashRouter as Router, Route } from 'react-router-dom';
-
-// import Chat from './components/Chat'
-
-import ChatRoom from './components/ChatRoom/ChatRoom'
-import Home from './components/ChatRoom/Home'
 
 function App() {
   return (
@@ -20,10 +15,4 @@ function App() {
   );
 }
 
-
-
 export default App;
-
-
-// const name = props.location.state ? props.location.state.name : "Ft8oDW1I88";
-// const room = props.location.state ? props.location.state.room : "L9G0wsnCAz";
