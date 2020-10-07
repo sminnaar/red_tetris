@@ -29,7 +29,6 @@ const Tetris = (props) => {
     const room = url.substring(1, url.indexOf('['));
     const user = url.substring((url.indexOf('[') + 1), url.indexOf(']'));
 
-    // const { full, messages, sendMessage, sendStage, opponentStage } = useTetris(room, user);
     const { full, messages, sendMessage, sendStage, opponentStage } = useTetris(room, user);
 
     const [loading, setLoading] = useState(true)
@@ -142,9 +141,7 @@ const Tetris = (props) => {
         if (!full) {
             setLoading(false);
         }
-        // }, [stage, sendStage, loading, full]);
     }, [stage, sendStage, full, setLoading]);
-
 
 
     if (loading) {
@@ -170,9 +167,9 @@ const Tetris = (props) => {
                 >
                     <StyledTetris>
                         <Stage stage={stage} id='1' />
+
                         <StyledPanel>
                             <StartButton callback={startGame} />
-
                             <h3 className="room-name">Room: {room}</h3>
                             <h3 className="room-name">User: {user}</h3>
                             {gameOver ? (
@@ -207,6 +204,7 @@ const Tetris = (props) => {
                                     </div>
                                 )}
                         </StyledPanel>
+
                         <Stage stage={opponentStage.body} id='2' />
                     </StyledTetris>
                 </StyledTetrisWrapper >

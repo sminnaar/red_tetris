@@ -77,11 +77,8 @@ io.on("connection", (socket) => {
     }
     else {
       if (rooms[roomId].users.length === 2) {
-
-        console.log("full")
         socket.emit('full', (data) => {
-          // sending to individual socketid (private message)
-          io.to(socket.id).emit('full', 'VOL, FOkkOF');
+          io.to(socket.id).emit('full');
         })
       } else {
         rooms[roomId].users.push(user);

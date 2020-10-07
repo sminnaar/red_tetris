@@ -2,7 +2,7 @@ import React from 'react'
 
 const Loader = () => (
   <div className="loader">
-    <style jsx>{`
+    <style jsx="true">{`
       .loader {
         border: 25px solid grey; /* Light grey */
         border-top: 25px solid black; /* Blue */
@@ -24,7 +24,6 @@ const Loader = () => (
           transform: rotate(360deg);
         }
       }
-      
     `}</style>
   </div>
 )

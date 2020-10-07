@@ -31,7 +31,7 @@ export const useTetris = (roomId, userId) => {
         ...move,
         ownedByCurrentUser: move.senderId === socketRef.current.id,
       };
-      if (move.senderId != socketRef.current.id)
+      if (move.senderId !== socketRef.current.id)
         setOpponentMove(incomingMove);
     });
 

@@ -12,7 +12,7 @@ const Home = (props) => {
   const [roomName, setRoomName] = useState('');
   const randomName = uniqueNamesGenerator({ dictionaries: [adjectives, colors, animals] });
 
-  const error = props.location.state ? props.location.state.error : null;
+  let error = props.location.state ? props.location.state.error : null;
 
   const handleRoomNameChange = (event) => {
     setRoomName(event.target.value);
@@ -24,20 +24,28 @@ const Home = (props) => {
         <input
           type="text"
           placeholder="Room"
-          value={roomName}
+          value={roomName ? roomName : ''}
           onChange={handleRoomNameChange}
-          className="text-input-field"
+        // className="text-input-field"
         />
-        {error ? <div> <Display text={error} /> </div> : <div></div>}
+
         <StyledJoinButton>
-          <Link to={{
-            pathname: `/${roomName}[${randomName}]`,
-            state: {
-              room: roomName,
-              name: randomName,
-              error: error,
-            }
-          }}>Join</Link>
+          {roomName ? (
+            < Link to={{
+              pathname: `/${roomName}[${randomName}]`,
+              state: {
+                room: roomName,
+                name: randomName,
+                error: null,
+              }
+            }}>Join</Link>
+          ) : (
+              <div>< Display text='Please enter a room name' /></div>
+              // <div>< Display text={error ? error : error = null && 'room'} /></div>
+            )
+
+          }
+          {error ? <div> <Display text={error} /> </div> : <div></div>}
         </StyledJoinButton>
       </StyledHome>
     </StyledHomeWrapper >
