@@ -6,12 +6,10 @@ const SOCKET_SERVER_URL = "http://localhost:8080";
 const useLobby = (roomId) => {
 
     const [error, setError] = useState('');
-
     const socketRef = useRef();
 
     useEffect(() => {
 
-        // setError('Room')
         socketRef.current = socketIOClient(SOCKET_SERVER_URL, {
             query: { roomId },
         });

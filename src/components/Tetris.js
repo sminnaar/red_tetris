@@ -4,7 +4,7 @@ import { Redirect } from 'react-router-dom';
 import { createStage, checkCollision } from '../lib/helpers'
 
 // Styled Components
-import { StyledTetrisWrapper, StyledTetris, StyledAside } from './styles/StyledTetris'
+import { StyledTetrisWrapper, StyledTetris } from './styles/StyledTetris'
 
 import { StyledPanel, StyledInput } from './styles/StyledPanel'
 
@@ -14,6 +14,7 @@ import "../components/Chat.css";
 import Stage from './Stage'
 import Display from './Display'
 import StartButton from './StartButton'
+import Loader from './Loader'
 
 // Custom Hooks
 import { useInterval } from '../hooks/useInterval'
@@ -28,7 +29,11 @@ const Tetris = (props) => {
     const room = url.substring(1, url.indexOf('['));
     const user = url.substring((url.indexOf('[') + 1), url.indexOf(']'));
 
-    const { fullTest, messages, sendMessage, sendStage, opponentStage } = useTetris(room, user);
+    // const { full, messages, sendMessage, sendStage, opponentStage } = useTetris(room, user);
+    const { full, messages, sendMessage, sendStage, opponentStage } = useTetris(room, user);
+
+    const [loading, setLoading] = useState(true)
+
     const [newMessage, setNewMessage] = useState("");
 
     const handleNewMessageChange = (event) => {
@@ -133,89 +138,78 @@ const Tetris = (props) => {
     }, dropTime)
 
     useEffect(() => {
-
         sendStage(stage);
+        if (!full) {
+            setLoading(false);
+        }
+        // }, [stage, sendStage, loading, full]);
+    }, [stage, sendStage, full, setLoading]);
 
-    }, [stage, fullTest]);
 
-    if (fullTest) {
+
+    if (loading) {
+        return (
+            <StyledPanel>
+                <Loader />
+            </StyledPanel>
+        )
+    }
+    if (full) {
         return (
             <Redirect
                 to={{ pathname: '/', state: { error: 'Room full' } }}
             />
-            // <Redirect
-            //     to={{
-            //         // pathname: `/${room}[${name}]`,
-            //         pathname: '/',
-            //         state: {
-            //             error: 'VOL, FOKKOF'
-            //             // error: fullTest
-            //             // room: room,
-            //             // name: name
-            //         }
-            //     }}
-            // />
-
         )
     } else {
         return (
-            <><StyledTetrisWrapper
-                role="button" tabIndex="0"
-                onKeyDown={e => move(e) && console.log(e.keyCode)}
-                onKeyUp={keyUp}
-            >
+            <>
+                <StyledTetrisWrapper
+                    role="button" tabIndex="0"
+                    onKeyDown={e => move(e) && console.log(e.keyCode)}
+                    onKeyUp={keyUp}
+                >
+                    <StyledTetris>
+                        <Stage stage={stage} id='1' />
+                        <StyledPanel>
+                            <StartButton callback={startGame} />
 
-                <StyledTetris>
-                    {/* {opponentMove.body ? <Stage stage={opponentMove} /> : null} */}
-                    <Stage stage={stage} id='1' />
+                            <h3 className="room-name">Room: {room}</h3>
+                            <h3 className="room-name">User: {user}</h3>
+                            {gameOver ? (
+                                <Display gameOver={gameOver} text="Game Over" />
+                            ) : (
+                                    < div >
+                                        <div className="messages-container">
+                                            <ol className="messages-list">
+                                                {messages.map((message, i) => (
+                                                    <li
+                                                        key={i}
+                                                        className={`message-item ${message.ownedByCurrentUser ? "my-message" : "received-message"
+                                                            }`}
+                                                    >
+                                                        {message.body}
+                                                    </li>
+                                                ))}
+                                            </ol>
+                                        </div>
 
-                    <StyledPanel>
-                        <StartButton callback={startGame} />
-
-                        <h3 className="room-name">Room: {room}</h3>
-                        <h3 className="room-name">User: {user}</h3>
-                        {gameOver ? (
-                            <Display gameOver={gameOver} text="Game Over" />
-                        ) : (
-
-
-                                < div >
-                                    <div className="messages-container">
-                                        <ol className="messages-list">
-                                            {messages.map((message, i) => (
-                                                <li
-                                                    key={i}
-                                                    className={`message-item ${message.ownedByCurrentUser ? "my-message" : "received-message"
-                                                        }`}
-                                                >
-                                                    {message.body}
-                                                </li>
-                                            ))}
-                                        </ol>
-                                    </div>
-
-                                    <StyledInput>
-                                        <textarea
-                                            value={newMessage}
-                                            onChange={handleNewMessageChange}
-                                            placeholder="Write message..."
-                                            className="new-message-input-field"
-                                        />
-                                        <button onClick={handleSendMessage} className="send-message-button">
-                                            Send
+                                        <StyledInput>
+                                            <textarea
+                                                value={newMessage}
+                                                onChange={handleNewMessageChange}
+                                                placeholder="Write message..."
+                                                className="new-message-input-field"
+                                            />
+                                            <button onClick={handleSendMessage} className="send-message-button">
+                                                Send
                                     </button>
-                                    </StyledInput>
-                                </div>
-                            )}
-                    </StyledPanel>
-
-
-                    <Stage stage={opponentStage.body} id='2' />
-
-
-                </StyledTetris>
-
-            </StyledTetrisWrapper >
+                                        </StyledInput>
+                                    </div>
+                                )}
+                        </StyledPanel>
+                        <Stage stage={opponentStage.body} id='2' />
+                    </StyledTetris>
+                </StyledTetrisWrapper >
             </>
         )
     }

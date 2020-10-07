@@ -92,24 +92,6 @@ io.on("connection", (socket) => {
     }
   }
 
-  // // Listen for pongs
-  // socket.on('pong', () => {
-  //   // io.in(roomId).emit('ping', data);
-  //   console.log("PONG")
-  //   io.emit('ping');
-  //   console.log("PING")
-  // });
-
-  // // Listen for pongs
-  // socket.on('full', () => {
-  //   if (rooms[roomId].users.length === 2) {
-  //     console.log("full")
-  //     socket.emit('full', (data) => {
-  //       // sending to individual socketid (private message)
-  //       io.to(socket.id).emit('full', 'VOL, FOkkOF');
-  //     })
-  // });
-
   // Listen for new messages
   socket.on('chat', (data) => {
     io.in(roomId).emit('chat', data);
@@ -159,8 +141,6 @@ io.on("connection", (socket) => {
     }
 
   });
-
-
 
 });
 
