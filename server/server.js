@@ -104,8 +104,10 @@ io.on("connection", (socket) => {
   });
 
   socket.on('dead', (data) => {
-    console.log('Sent Player is dead')
-    console.log(data.senderId);
+    // console.log('Sent Player is dead')
+    // console.log(data);
+    rooms[data.roomId].winner = rooms[data.roomId].users.filter(x => x.socket != data.senderId);
+    // console.log(rooms[data.roomId]);
     io.in(roomId).emit('dead', data.senderId);
   });
 

@@ -40,7 +40,7 @@ export const useTetris = (roomId, userId) => {
     socketRef.current.on('dead', (data) => {
       console.log(data);
       if (data !== socketRef.current.id) {
-        console.log('Opponent died!!!!');
+        // console.log('Opponent died!!!!');
         setOpponentDead(true);
       }
     });
@@ -62,10 +62,10 @@ export const useTetris = (roomId, userId) => {
     });
   };
 
-  const sendGameOver = (roomId) => {
-    console.log('CLIENT: DEAD Player!!!!')
+  const sendGameOver = () => {
+    // console.log('CLIENT: DEAD Player!!!!')
     socketRef.current.emit('dead', {
-      room: roomId,
+      roomId: roomId,
       senderId: socketRef.current.id
     });
   };
