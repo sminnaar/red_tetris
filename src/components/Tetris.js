@@ -184,40 +184,38 @@ const Tetris = (props) => {
 
                         <StyledPanel>
                             <StartButton callback={startGame} />
-                            <h3 className="room-name">Room: {room}</h3>
-                            <h3 className="room-name">User: {user}</h3>
+                            {/* <h3 className="room-name">Room: {room}</h3> */}
+                            {/* <h3 className="room-name">User: {user}</h3> */}
                             {winner ? <Display text="You have Won!!!" /> : null}
-                            {gameOver ? (
-                                <Display gameOver={gameOver} text="Game Over" />
-                            ) : (
-                                    < div >
-                                        <div className="messages-container">
-                                            <ol className="messages-list">
-                                                {messages.map((message, i) => (
-                                                    <li
-                                                        key={i}
-                                                        className={`message-item ${message.ownedByCurrentUser ? "my-message" : "received-message"
-                                                            }`}
-                                                    >
-                                                        {message.body}
-                                                    </li>
-                                                ))}
-                                            </ol>
-                                        </div>
+                            {gameOver ? <Display gameOver={gameOver} text="You Lost" /> : null}
+                            < div >
+                                <div className="messages-container">
+                                    <ol className="messages-list">
+                                        {messages.map((message, i) => (
+                                            <li
+                                                key={i}
+                                                className={`message-item ${message.ownedByCurrentUser ? "my-message" : "received-message"
+                                                    }`}
+                                            >
+                                                {message.body}
+                                            </li>
+                                        ))}
+                                    </ol>
+                                </div>
 
-                                        <StyledInput>
-                                            <textarea
-                                                value={newMessage}
-                                                onChange={handleNewMessageChange}
-                                                placeholder="Write message..."
-                                                className="new-message-input-field"
-                                            />
-                                            <button onClick={handleSendMessage} className="send-message-button">
-                                                Send
+                                <StyledInput>
+                                    <textarea
+                                        value={newMessage}
+                                        onChange={handleNewMessageChange}
+                                        placeholder="Write message..."
+                                        className="new-message-input-field"
+                                    />
+                                    <button onClick={handleSendMessage} className="send-message-button">
+                                        Send
                                     </button>
-                                        </StyledInput>
-                                    </div>
-                                )}
+                                </StyledInput>
+                            </div>
+                                )
                         </StyledPanel>
 
                         <Stage stage={opponentStage.body} id='2' />
