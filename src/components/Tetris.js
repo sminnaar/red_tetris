@@ -30,6 +30,8 @@ const Tetris = (props) => {
     const user = url.substring((url.indexOf('[') + 1), url.indexOf(']'));
 
     const {
+        leader,
+        getLeader,
         start,
         pieces,
         startRound,
@@ -149,12 +151,11 @@ const Tetris = (props) => {
         if (opponentDead) {
             setWinner(true);
             setDroptime(null);
-            // endRound();
-            // setNextPiece(0);
         }
     }, [stage, sendStage, full, setLoading, opponentDead, setWinner]);
 
     useEffect(() => {
+        getLeader();
         if (pieces && start) {
             setStage(createStage());
             setDroptime(1000);
@@ -165,7 +166,7 @@ const Tetris = (props) => {
             boardRef.current.focus();
         }
 
-    }, [pieces, start]);
+    }, [pieces, start, leader]);
 
     if (loading) {
         return (
@@ -177,7 +178,8 @@ const Tetris = (props) => {
     if (full) {
         return (
             <Redirect
-                to={{ pathname: '/', state: { error: 'Room full' } }}
+                to={{ pathname: '/', state: { error: 'Room full or game already started' } }}
+
             />
         )
     } else {
@@ -193,7 +195,7 @@ const Tetris = (props) => {
                         <Stage stage={stage} id='1' />
 
                         <StyledPanel>
-                            <StartButton callback={startGame} />
+                            {leader ? <StartButton callback={startGame} /> : null}
                             {/* <h3 className="room-name">Room: {room}</h3> */}
                             {/* <h3 className="room-name">User: {user}</h3> */}
                             {winner ? <Display text="You have Won!!!" /> : null}

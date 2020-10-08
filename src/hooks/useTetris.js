@@ -9,6 +9,7 @@ export const useTetris = (roomId, userId) => {
   const [opponentStage, setOpponentMove] = useState([])
   const [full, setFullTest] = useState(false);
   const [opponentDead, setOpponentDead] = useState(false);
+  const [leader, setLeader] = useState(false);
   const [start, setStart] = useState(false);
   const [pieces, setPieces] = useState(false);
   const socketRef = useRef();
@@ -60,6 +61,13 @@ export const useTetris = (roomId, userId) => {
       console.log(data);
     });
 
+    socketRef.current.on('setLeader', (userId) => {
+      console.log("setLeader")
+      console.log(userId);
+      if (userId === socketRef.current.id)
+        setLeader(true);
+    });
+
     return () => {
       socketRef.current.disconnect();
     };
@@ -98,5 +106,10 @@ export const useTetris = (roomId, userId) => {
     socketRef.current.emit('end', () => { });
   };
 
-  return { pieces, start, startRound, endRound, opponentDead, full, messages, sendMessage, sendStage, sendGameOver, opponentStage };
+  const getLeader = () => {
+    console.log("getLeader")
+    socketRef.current.emit('getLeader', () => { });
+  };
+
+  return { leader, getLeader, pieces, start, startRound, endRound, opponentDead, full, messages, sendMessage, sendStage, sendGameOver, opponentStage };
 };

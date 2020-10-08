@@ -78,7 +78,7 @@ io.on("connection", (socket) => {
       socket.join(roomId);
     }
     else {
-      if (rooms[roomId].users.length === 2) {
+      if (rooms[roomId].users.length === 2 || rooms[roomId].start) {
         socket.emit('full', (data) => {
           io.to(socket.id).emit('full');
         })
@@ -120,11 +120,20 @@ io.on("connection", (socket) => {
       i++;
     }
     console.log('setStart');
+    rooms[roomId].start = true;
     io.to(roomId).emit('setStart', pieces);
+  });
+
+  socket.on('getLeader', () => {
+    console.log('getLeader');
+    const leader = rooms[roomId].leader;
+    console.log(leader)
+    io.to(roomId).emit('setLeader', leader);
   });
 
   socket.on('end', (room) => {
     console.log('setEnd');
+    rooms[roomId].start = false;
     io.to(roomId).emit('setEnd');
   });
 
@@ -136,11 +145,21 @@ io.on("connection", (socket) => {
       const roomsToDelete = [];
       for (const roomId in rooms) {
         var room = rooms[roomId];
-        // check to see if the socket is in the current room
-        // if (room.users.includes(socket)) {
+
+        console.log(room);
+
         if (room.users.some(user => user.socket === socket.id)) {
           room.users = room.users.filter((user) => user.socket !== socket.id);
+
+
+          if (room.leader === socket.id && room.users.length === 1) {
+            room.leader = room.users[0].socket;
+            io.to(roomId).emit('setLeader', room.leader);
+          }
+
           socket.leave(roomId);
+
+          console.log(room);
           // console.log("Left: ");
           // console.log(rooms[roomId].users);
           // console.log("Object found inside the array.");
