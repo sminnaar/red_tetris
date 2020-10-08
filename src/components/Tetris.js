@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Redirect } from 'react-router-dom';
 
 import { createStage, checkCollision } from '../lib/helpers'
@@ -49,6 +49,8 @@ const Tetris = (props) => {
 
     const [nextPiece, setNextPiece] = useState(0);
 
+    const boardRef = useRef(null);
+
     const handleNewMessageChange = (event) => {
         setNewMessage(event.target.value);
     };
@@ -75,10 +77,10 @@ const Tetris = (props) => {
     const startGame = () => {
         // Reset everything
         startRound();
-        setStage(createStage());
-        setDroptime(1000);
-        setGameOver(false);
-        setRows(0);
+        // setStage(createStage());
+        // setDroptime(1000);
+        // setGameOver(false);
+        // setRows(0);
         // resetPlayer(pieces, nextPiece);
         // setScore(0);
         // setLevel(0);
@@ -146,14 +148,21 @@ const Tetris = (props) => {
         }
         if (opponentDead) {
             setWinner(true);
-            setNextPiece(0);
+            setDroptime(null);
+            // endRound();
+            // setNextPiece(0);
         }
     }, [stage, sendStage, full, setLoading, opponentDead, setWinner]);
 
     useEffect(() => {
         if (pieces && start) {
+            setStage(createStage());
+            setDroptime(1000);
+            setGameOver(false);
+            setRows(0);
             resetPlayer(pieces, nextPiece);
             sendStage(stage);
+            boardRef.current.focus();
         }
 
     }, [pieces, start]);
@@ -175,6 +184,7 @@ const Tetris = (props) => {
         return (
             <>
                 <StyledTetrisWrapper
+                    ref={boardRef}
                     role="button" tabIndex="0"
                     onKeyDown={e => move(e) && console.log(e.keyCode)}
                     onKeyUp={keyUp}
