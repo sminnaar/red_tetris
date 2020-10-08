@@ -38,7 +38,7 @@ export const useTetris = (roomId, userId) => {
     });
 
     socketRef.current.on('dead', (data) => {
-      // console.log(data);
+      console.log(data);
       if (data !== socketRef.current.id) {
         console.log('Opponent died!!!!');
         setOpponentDead(true);

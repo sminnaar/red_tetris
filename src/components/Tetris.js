@@ -57,6 +57,7 @@ const Tetris = (props) => {
     const [player, updatePlayerPos, resetPlayer, playerRotate, fall] = usePlayer();
     const [stage, setStage, rowsCleared] = useStage(player, resetPlayer);
     const [rows, setRows] = useStatus(rowsCleared);
+    const [winner, setWinner] = useStatus('');
 
     const moveBlock = dir => {
         if (!checkCollision(player, stage, { x: dir, y: 0 })) {
@@ -71,9 +72,9 @@ const Tetris = (props) => {
         setDroptime(1000);
         resetPlayer();
         setGameOver(false);
-        setScore(0);
+        // setScore(0);
         setRows(0);
-        setLevel(0);
+        // setLevel(0);
     }
 
 
@@ -82,8 +83,10 @@ const Tetris = (props) => {
             updatePlayerPos({ x: 0, y: 1, collided: false })
         } else {
             if (player.pos.y < 1) {
+                // Game Over!!!!
                 setGameOver(true)
                 setDroptime(null)
+                sendGameOver();
             }
             updatePlayerPos({ x: 0, y: 0, collided: true })
         }
