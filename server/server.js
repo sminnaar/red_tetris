@@ -103,6 +103,13 @@ io.on("connection", (socket) => {
     io.in(roomId).emit('stage', data);
   });
 
+  // Listen for new game events
+  socket.on('clearRow', (data) => {
+    // console.log('Sent Player move')
+    console.log('addrow');
+    io.in(roomId).emit('addRow', data.senderId);
+  });
+
   socket.on('dead', (data) => {
     // console.log('Sent Player is dead')
     // console.log(data);

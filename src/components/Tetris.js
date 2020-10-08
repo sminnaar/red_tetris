@@ -30,6 +30,9 @@ const Tetris = (props) => {
     const user = url.substring((url.indexOf('[') + 1), url.indexOf(']'));
 
     const {
+        add,
+        setAdd,
+        clearRow,
         leader,
         getLeader,
         start,
@@ -65,7 +68,7 @@ const Tetris = (props) => {
     const [dropTime, setDroptime] = useState(null)
     const [gameOver, setGameOver] = useState(false)
     const [player, updatePlayerPos, resetPlayer, playerRotate, fall] = usePlayer(setNextPiece);
-    const [stage, setStage, rowsCleared] = useStage(player, resetPlayer, pieces, nextPiece);
+    const [addRow, stage, setStage, rowsCleared, setRowsCleared] = useStage(player, resetPlayer, pieces, nextPiece, clearRow);
     const [rows, setRows] = useStatus(rowsCleared);
     const [winner, setWinner] = useStatus(false);
 
@@ -78,7 +81,6 @@ const Tetris = (props) => {
 
     const startGame = () => {
         // Reset everything
-
         setNextPiece(0)
         startRound();
     }
@@ -136,18 +138,27 @@ const Tetris = (props) => {
 
     useInterval(() => {
         drop();
-    }, dropTime)
+    }, dropTime);
 
     useEffect(() => {
+        if (rowsCleared) {
+            console.log('cleared')
+            clearRow();
+            setRowsCleared(0);
+        }
+        if (add) {
+            addRow(stage, setStage);
+            // updatePlayerPos({ x: 0, y: 0, collided: false });
+            setAdd(false);
+            console.log("in add")
+            console.log(add)
+            sendStage(stage);
+        }
         sendStage(stage);
         if (!full) {
             setLoading(false);
         }
-        // if (opponentDead) {
-        //     setWinner(true);
-        //     setDroptime(null);
-        //     setNextPiece(0);
-        // }
+
     }, [stage, sendStage, full, setLoading, opponentDead, setWinner]);
 
     useEffect(() => {
@@ -167,7 +178,7 @@ const Tetris = (props) => {
             // setStage(createStage());
             // sendStage(stage);
             setNextPiece(0);
-            setWinner(true)
+            // setWinner(true)
             setDroptime(null);
             setGameOver(false);
             setRows(0);

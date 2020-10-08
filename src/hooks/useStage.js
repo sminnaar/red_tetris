@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-
 import { createStage } from '../lib/helpers'
 
 export const useStage = (player, resetPlayer, pieces, nextPiece) => {
@@ -8,16 +7,48 @@ export const useStage = (player, resetPlayer, pieces, nextPiece) => {
     const [stage, setStage] = useState(createStage());
     const [rowsCleared, setRowsCleared] = useState(0)
 
-    useEffect(() => {
-        setRowsCleared(0);
+    // const createStage = () =>
+    // Array.from(Array(STAGE_HEIGHT), () =>
+    //     new Array(STAGE_WIDTH).fill([0, 'clear'])
+    // )
 
+    // const addRow = (stage, setStage) => {
+    //     const temp = Array.from(Array(20), () => new Array(12).fill(['I', '']))
+
+    //     // setStage(temp);
+    //     setStage(createStage());
+    // }
+
+    const addRow = (stage, setStage) => {
+        console.log("In stage addRow");
+
+        for (let i = 1; i < stage.length; i++)
+            stage[i - 1] = [...stage[i]];
+
+        stage[stage.length - 1] = new Array(stage[0].length).fill(["X", ""]);
+
+        console.log(stage);
+        // setStage(createStage());
+        setStage(stage);
+    };
+
+    useEffect(() => {
+        // setRowsCleared(0);
         // Logic to clear rows. Use the stage to remove row from other player
         const sweepRows = newStage =>
             newStage.reduce((ack, row) => {
-                if (row.findIndex(cell => cell[0] === 0) === -1) {
-                    setRowsCleared(prev => prev + 1);
+                if (row.findIndex((cell) => cell[0] === 0 || cell[0] === "X") === -1) {
+                    // if (row.findIndex(cell => cell[0] === 0) === -1) {
+                    // setRowsCleared(prev => prev + 1);
+
+                    setRowsCleared(1);
+
+
+
+
                     ack.unshift(new Array(newStage[0].length).fill([0, 'clear']));
                     return ack;
+
                 }
                 ack.push(row);
                 return ack;
@@ -53,5 +84,5 @@ export const useStage = (player, resetPlayer, pieces, nextPiece) => {
 
     }, [player, resetPlayer])
 
-    return [stage, setStage, rowsCleared, player]
+    return [addRow, stage, setStage, rowsCleared, setRowsCleared, player]
 }

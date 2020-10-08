@@ -12,6 +12,9 @@ export const useTetris = (roomId, userId) => {
   const [leader, setLeader] = useState(false);
   const [start, setStart] = useState(false);
   const [pieces, setPieces] = useState(false);
+
+  const [add, setAdd] = useState(false);
+
   const socketRef = useRef();
 
   useEffect(() => {
@@ -41,6 +44,14 @@ export const useTetris = (roomId, userId) => {
       if (data !== socketRef.current.id) {
         // console.log('Opponent died!!!!');
         setOpponentDead(true);
+      }
+    });
+
+    socketRef.current.on('addRow', (data) => {
+      console.log("in socket addrow");
+      console.log(data);
+      if (data !== socketRef.current.id) {
+        setAdd(true)
       }
     });
 
@@ -111,5 +122,12 @@ export const useTetris = (roomId, userId) => {
     socketRef.current.emit('getLeader', () => { });
   };
 
-  return { leader, getLeader, pieces, start, startRound, endRound, opponentDead, full, messages, sendMessage, sendStage, sendGameOver, opponentStage };
+  const clearRow = () => {
+    console.log("clearRow")
+    socketRef.current.emit('clearRow', {
+      senderId: socketRef.current.id
+    });
+  };
+
+  return { add, setAdd, clearRow, leader, getLeader, pieces, start, startRound, endRound, opponentDead, full, messages, sendMessage, sendStage, sendGameOver, opponentStage };
 };
