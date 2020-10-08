@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react'
 
 import { createStage } from '../lib/helpers'
 
-// import usePiece from '../hooks/usePiece'
-
 export const useStage = (player, resetPlayer) => {
 
     // console.log(player);
