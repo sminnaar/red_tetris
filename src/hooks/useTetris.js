@@ -57,7 +57,7 @@ export const useTetris = (roomId, userId) => {
     socketRef.current.on('setEnd', (data) => {
       console.log("useSetEnd")
       setStart(false);
-      setPieces([]);
+      // setPieces([]);
       console.log(data);
     });
 

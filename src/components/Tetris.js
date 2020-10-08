@@ -67,7 +67,7 @@ const Tetris = (props) => {
     const [player, updatePlayerPos, resetPlayer, playerRotate, fall] = usePlayer(setNextPiece);
     const [stage, setStage, rowsCleared] = useStage(player, resetPlayer, pieces, nextPiece);
     const [rows, setRows] = useStatus(rowsCleared);
-    const [winner, setWinner] = useStatus('');
+    const [winner, setWinner] = useStatus(false);
 
     const moveBlock = dir => {
         if (!checkCollision(player, stage, { x: dir, y: 0 })) {
@@ -79,15 +79,8 @@ const Tetris = (props) => {
     const startGame = () => {
         // Reset everything
 
-        setStage(createStage());
+        setNextPiece(0)
         startRound();
-        // setStage(createStage());
-        // setDroptime(1000);
-        // setGameOver(false);
-        // setRows(0);
-        // resetPlayer(pieces, nextPiece);
-        // setScore(0);
-        // setLevel(0);
     }
 
 
@@ -101,6 +94,7 @@ const Tetris = (props) => {
                 setDroptime(null)
                 sendGameOver();
                 endRound();
+                setNextPiece(0);
             }
             updatePlayerPos({ x: 0, y: 0, collided: true })
         }
@@ -140,7 +134,6 @@ const Tetris = (props) => {
         }
     };
 
-
     useInterval(() => {
         drop();
     }, dropTime)
@@ -150,22 +143,34 @@ const Tetris = (props) => {
         if (!full) {
             setLoading(false);
         }
-        if (opponentDead) {
-            setWinner(true);
-            setDroptime(null);
-        }
+        // if (opponentDead) {
+        //     setWinner(true);
+        //     setDroptime(null);
+        //     setNextPiece(0);
+        // }
     }, [stage, sendStage, full, setLoading, opponentDead, setWinner]);
 
     useEffect(() => {
         getLeader();
         if (pieces && start) {
             setStage(createStage());
+            setNextPiece(0);
+            setWinner(false)
             setDroptime(1000);
             setGameOver(false);
             setRows(0);
             resetPlayer(pieces, nextPiece);
             sendStage(stage);
             boardRef.current.focus();
+        }
+        else if (!start) {
+            // setStage(createStage());
+            // sendStage(stage);
+            setNextPiece(0);
+            setWinner(true)
+            setDroptime(null);
+            setGameOver(false);
+            setRows(0);
         }
 
     }, [pieces, start, leader]);
@@ -181,7 +186,6 @@ const Tetris = (props) => {
         return (
             <Redirect
                 to={{ pathname: '/', state: { error: 'Room full or game already started' } }}
-
             />
         )
     } else {
@@ -199,8 +203,8 @@ const Tetris = (props) => {
                         <StyledPanel>
                             {/* <h3 className="room-name">Room: {room}</h3> */}
                             {/* <h3 className="room-name">User: {user}</h3> */}
-                            {leader ? <StartButton callback={startGame} /> : <Display text='Waiting for leader to start...' />}
-                            {winner ? <Display text="You have Won!!!" /> : null}
+                            {leader && !start ? <StartButton callback={startGame} /> : (!start ? <Display text='Waiting for leader to start...' /> : null)}
+                            {winner && !start ? <Display text="You have Won!!!" /> : null}
                             {gameOver ? <Display gameOver={gameOver} text="You Lost" /> : null}
                             < div >
                                 <div className="messages-container">
