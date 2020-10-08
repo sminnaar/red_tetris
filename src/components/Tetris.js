@@ -78,6 +78,8 @@ const Tetris = (props) => {
 
     const startGame = () => {
         // Reset everything
+
+        setStage(createStage());
         startRound();
         // setStage(createStage());
         // setDroptime(1000);
@@ -195,9 +197,9 @@ const Tetris = (props) => {
                         <Stage stage={stage} id='1' />
 
                         <StyledPanel>
-                            {leader ? <StartButton callback={startGame} /> : null}
                             {/* <h3 className="room-name">Room: {room}</h3> */}
                             {/* <h3 className="room-name">User: {user}</h3> */}
+                            {leader ? <StartButton callback={startGame} /> : <Display text='Waiting for leader to start...' />}
                             {winner ? <Display text="You have Won!!!" /> : null}
                             {gameOver ? <Display gameOver={gameOver} text="You Lost" /> : null}
                             < div >
