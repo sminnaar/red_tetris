@@ -29,7 +29,15 @@ const Tetris = (props) => {
     const room = url.substring(1, url.indexOf('['));
     const user = url.substring((url.indexOf('[') + 1), url.indexOf(']'));
 
-    const { full, messages, sendMessage, sendStage, opponentStage } = useTetris(room, user);
+    const {
+        opponentDead,
+        full,
+        messages,
+        sendMessage,
+        sendStage,
+        sendGameOver,
+        opponentStage
+    } = useTetris(room, user);
 
     const [loading, setLoading] = useState(true)
 
@@ -47,6 +55,7 @@ const Tetris = (props) => {
     // const [full, setFull] = useState(false)
     const [dropTime, setDroptime] = useState(null)
     const [gameOver, setGameOver] = useState(false)
+    const [winner, setWinner] = useState(false)
 
     const [
         player,
@@ -92,8 +101,9 @@ const Tetris = (props) => {
         } else {
             if (player.pos.y < 1) {
                 // console.log('GAME OVER!!!')
-                setGameOver(true)
-                setDroptime(null)
+                sendGameOver();
+                setGameOver(true);
+                setDroptime(null);
             }
             updatePlayerPos({ x: 0, y: 0, collided: true })
         }
@@ -141,7 +151,9 @@ const Tetris = (props) => {
         if (!full) {
             setLoading(false);
         }
-    }, [stage, sendStage, full, setLoading]);
+        if (opponentDead)
+            setWinner(true);
+    }, [stage, sendStage, full, setLoading, opponentDead, setWinner]);
 
 
     if (loading) {
@@ -172,6 +184,7 @@ const Tetris = (props) => {
                             <StartButton callback={startGame} />
                             <h3 className="room-name">Room: {room}</h3>
                             <h3 className="room-name">User: {user}</h3>
+                            {winner ? <Display text="You have Won!!!" /> : null}
                             {gameOver ? (
                                 <Display gameOver={gameOver} text="Game Over" />
                             ) : (

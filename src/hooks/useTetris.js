@@ -8,7 +8,9 @@ export const useTetris = (roomId, userId) => {
   const [messages, setMessages] = useState([]);
   const [opponentStage, setOpponentMove] = useState([])
 
-  const [full, setFullTest] = useState(false)
+  const [full, setFullTest] = useState(false);
+
+  const [opponentDead, setOpponentDead] = useState(false);
 
   const socketRef = useRef();
 
@@ -35,6 +37,14 @@ export const useTetris = (roomId, userId) => {
         setOpponentMove(incomingMove);
     });
 
+    socketRef.current.on('dead', (data) => {
+      // console.log(data);
+      if (data !== socketRef.current.id) {
+        console.log('Opponent died!!!!');
+        setOpponentDead(true);
+      }
+    });
+
     socketRef.current.on('full', () => {
       setFullTest(true);
     });
@@ -43,12 +53,20 @@ export const useTetris = (roomId, userId) => {
       socketRef.current.disconnect();
     };
 
-  }, [roomId, full]);
+  }, [userId, roomId, full]);
 
   const sendMessage = (messageBody) => {
     socketRef.current.emit('chat', {
       body: messageBody,
       senderId: socketRef.current.id,
+    });
+  };
+
+  const sendGameOver = (roomId) => {
+    console.log('CLIENT: DEAD Player!!!!')
+    socketRef.current.emit('dead', {
+      room: roomId,
+      senderId: socketRef.current.id
     });
   };
 
@@ -60,5 +78,5 @@ export const useTetris = (roomId, userId) => {
   };
 
 
-  return { full, messages, sendMessage, sendStage, opponentStage };
+  return { opponentDead, full, messages, sendMessage, sendStage, sendGameOver, opponentStage };
 };

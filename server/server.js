@@ -54,8 +54,8 @@ io.on("connection", (socket) => {
   console.log(`Client ${socket.id} connected`);
 
   const { roomId, userId } = socket.handshake.query;
-  console.log(`Server roomId: ${roomId}`);
-  console.log(`Server userId: ${userId}`);
+  // console.log(`Server roomId: ${roomId}`);
+  // console.log(`Server userId: ${userId}`);
 
   // Rooms, Users and Joining 
   if (roomId && userId) {
@@ -71,8 +71,8 @@ io.on("connection", (socket) => {
         users: [user]
       };
       rooms[roomId] = new Game(room);
-      console.log("Created: ");
-      console.log(rooms[roomId]);
+      // console.log("Created: ");
+      // console.log(rooms[roomId]);
       socket.join(roomId);
     }
     else {
@@ -83,8 +83,8 @@ io.on("connection", (socket) => {
       } else {
         rooms[roomId].users.push(user);
         socket.join(roomId);
-        console.log("Added: ");
-        console.log(rooms[roomId].users);
+        // console.log("Added: ");
+        // console.log(rooms[roomId].users);
       }
     }
   }
@@ -99,6 +99,12 @@ io.on("connection", (socket) => {
     // console.log('Sent Player move')
     // console.log(data.body);
     io.in(roomId).emit('stage', data);
+  });
+
+  socket.on('dead', (data) => {
+    console.log('Sent Player is dead')
+    console.log(data.senderId);
+    io.in(roomId).emit('dead', data.senderId);
   });
 
   socket.on('disconnect', () => {
@@ -133,7 +139,7 @@ io.on("connection", (socket) => {
         // console.log("ROOMS:")
         delete rooms[room.roomId];
       }
-      console.log(rooms);
+      // console.log(rooms);
 
     }
 
