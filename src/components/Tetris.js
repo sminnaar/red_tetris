@@ -52,37 +52,18 @@ const Tetris = (props) => {
         setNewMessage("");
     };
 
-    // const [full, setFull] = useState(false)
     const [dropTime, setDroptime] = useState(null)
     const [gameOver, setGameOver] = useState(false)
-    const [winner, setWinner] = useState(false)
-
-    const [
-        player,
-        updatePlayerPos,
-        resetPlayer,
-        playerRotate
-    ] = usePlayer();
-
-    const [stage,
-        setStage,
-        rowsCleared
-    ] = useStage(player, resetPlayer);
-
-    const [score,
-        setScore,
-        rows,
-        setRows,
-        level,
-        setLevel
-    ] = useStatus(rowsCleared);
-
+    const [player, updatePlayerPos, resetPlayer, playerRotate, fall] = usePlayer();
+    const [stage, setStage, rowsCleared] = useStage(player, resetPlayer);
+    const [rows, setRows] = useStatus(rowsCleared);
 
     const moveBlock = dir => {
         if (!checkCollision(player, stage, { x: dir, y: 0 })) {
             updatePlayerPos({ x: dir, y: 0 })
         }
     }
+
 
     const startGame = () => {
         // Reset everything
@@ -95,15 +76,14 @@ const Tetris = (props) => {
         setLevel(0);
     }
 
+
     const drop = () => {
         if (!checkCollision(player, stage, { x: 0, y: 1 })) {
             updatePlayerPos({ x: 0, y: 1, collided: false })
         } else {
             if (player.pos.y < 1) {
-                // console.log('GAME OVER!!!')
-                sendGameOver();
-                setGameOver(true);
-                setDroptime(null);
+                setGameOver(true)
+                setDroptime(null)
             }
             updatePlayerPos({ x: 0, y: 0, collided: true })
         }
@@ -113,7 +93,7 @@ const Tetris = (props) => {
         if (!gameOver) {
             if (keyCode === 40) {
                 // console.log("Interval On");
-                setDroptime(1000 / (level + 1) + 200);
+                setDroptime(1000);
             }
         }
     }
@@ -137,6 +117,8 @@ const Tetris = (props) => {
                 dropPlayer();
             } else if (keyCode === 38) {
                 playerRotate(stage, 1);
+            } else if (keyCode === 32) {
+                fall(stage)
             }
         }
     };

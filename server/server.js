@@ -8,6 +8,7 @@ const path = require('path');
 
 const Game = require('./classes/Game').Game
 const Player = require('./classes/Player').Player
+const Pieces = require('./classes/Pieces').Pieces
 
 const app = express();
 
@@ -62,6 +63,7 @@ io.on("connection", (socket) => {
     user = {
       socket: socket.id,
       userId: userId,
+      gameId: false,
     };
     users[user.userId] = new Player(user);
 
@@ -105,6 +107,29 @@ io.on("connection", (socket) => {
     console.log('Sent Player is dead')
     console.log(data.senderId);
     io.in(roomId).emit('dead', data.senderId);
+  });
+
+  socket.on('start', (room) => {
+    const startGame = (room) => {
+      users.map((user) => {
+        if (user.room === room) {
+          user.inGame = true
+        }
+      });
+      return users;
+    }
+    io.to(room).emit('started', startGame(room));
+  });
+
+  socket.on('getPieces', (room) => {
+    let Piece = new Pieces();
+    let pieces = [];
+    let i = 0;
+    while (i < 50) {
+      shapes.push(Piece.randomTetromino());
+      i++;
+    }
+    io.to(room).emit('setPieces', pieces);
   });
 
   socket.on('disconnect', () => {
