@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react'
 
 import { createStage } from '../lib/helpers'
 
-// import usePiece from '../hooks/usePiece'
-
-export const useStage = (player, resetPlayer) => {
+export const useStage = (player, resetPlayer, pieces, nextPiece) => {
 
     // console.log(player);
     const [stage, setStage] = useState(createStage());
@@ -44,7 +42,7 @@ export const useStage = (player, resetPlayer) => {
             });
             // Check if the Tetramino collided with borders or other pieces
             if (player.collided) {
-                resetPlayer();
+                resetPlayer(pieces, nextPiece);
                 return sweepRows(newStage);
             }
 

@@ -1,5 +1,5 @@
 class Pieces {
-  constructor(){
+  constructor() {
     this.TETROMINOS = {
       0: { shape: [[0]], color: '0, 0, 0' },
       I: {
@@ -32,8 +32,8 @@ class Pieces {
       },
     }
   }
-      
-  randomTetromino () {
+
+  randomTetromino() {
     const tetrominos = 'IJLOSTZ';
     const randTetromino =
       tetrominos[Math.floor(Math.random() * tetrominos.length)];
@@ -41,4 +41,4 @@ class Pieces {
   }
 }
 
-module.exports = Pieces;
+module.exports.Pieces = Pieces;

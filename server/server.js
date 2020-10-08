@@ -110,26 +110,20 @@ io.on("connection", (socket) => {
   });
 
   socket.on('start', (room) => {
-    const startGame = (room) => {
-      users.map((user) => {
-        if (user.room === room) {
-          user.inGame = true
-        }
-      });
-      return users;
-    }
-    io.to(room).emit('started', startGame(room));
-  });
-
-  socket.on('getPieces', (room) => {
     let Piece = new Pieces();
     let pieces = [];
     let i = 0;
     while (i < 50) {
-      shapes.push(Piece.randomTetromino());
+      pieces.push(Piece.randomTetromino());
       i++;
     }
-    io.to(room).emit('setPieces', pieces);
+    console.log('setStart');
+    io.to(roomId).emit('setStart', pieces);
+  });
+
+  socket.on('end', (room) => {
+    console.log('setEnd');
+    io.to(roomId).emit('setEnd');
   });
 
   socket.on('disconnect', () => {

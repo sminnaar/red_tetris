@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 import { STAGE_WIDTH, checkCollision } from '../lib/helpers';
 import { TETROMINOS, randomTetromino } from '../lib/tetrominos'
 
-export const usePlayer = () => {
+export const usePlayer = (setNextPiece) => {
     const [player, setPlayer] = useState({
         pos: { x: 0, y: 0 },
         tetromino: TETROMINOS[0].shape,
@@ -52,13 +52,28 @@ export const usePlayer = () => {
         setPlayer(clonedPlayer);
     }
 
-    const resetPlayer = useCallback(() => {
+    // const resetPlayer = useCallback(() => {
+    //     setPlayer({
+    //         pos: { x: STAGE_WIDTH / 2 - 1, y: 0 },
+    //         tetromino: randomTetromino().shape,
+    //         collided: false
+    //     })
+    // }, [])
+
+
+    const resetPlayer = useCallback((pieces, nextPiece) => {
         setPlayer({
-            pos: { x: STAGE_WIDTH / 2 - 1, y: 0 },
-            tetromino: randomTetromino().shape,
+            //   pos: { x: STAGE_WIDTH / 2 - 1, y: 0 },
+            pos: { x: STAGE_WIDTH / 2 - 2, y: 0 },
+            tetromino: pieces[nextPiece].shape,
             collided: false
-        })
-    }, [])
+        });
+        if (nextPiece + 1 > pieces.length - 1) {
+            setNextPiece(0);
+        } else {
+            setNextPiece(nextPiece + 1)
+        }
+    }, [setNextPiece]);
 
     return [player, updatePlayerPos, resetPlayer, playerRotate, fall];
 }

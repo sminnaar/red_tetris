@@ -30,6 +30,10 @@ const Tetris = (props) => {
     const user = url.substring((url.indexOf('[') + 1), url.indexOf(']'));
 
     const {
+        start,
+        pieces,
+        startRound,
+        endRound,
         opponentDead,
         full,
         messages,
@@ -43,6 +47,8 @@ const Tetris = (props) => {
 
     const [newMessage, setNewMessage] = useState("");
 
+    const [nextPiece, setNextPiece] = useState(0);
+
     const handleNewMessageChange = (event) => {
         setNewMessage(event.target.value);
     };
@@ -54,8 +60,8 @@ const Tetris = (props) => {
 
     const [dropTime, setDroptime] = useState(null)
     const [gameOver, setGameOver] = useState(false)
-    const [player, updatePlayerPos, resetPlayer, playerRotate, fall] = usePlayer();
-    const [stage, setStage, rowsCleared] = useStage(player, resetPlayer);
+    const [player, updatePlayerPos, resetPlayer, playerRotate, fall] = usePlayer(setNextPiece);
+    const [stage, setStage, rowsCleared] = useStage(player, resetPlayer, pieces, nextPiece);
     const [rows, setRows] = useStatus(rowsCleared);
     const [winner, setWinner] = useStatus('');
 
@@ -68,12 +74,13 @@ const Tetris = (props) => {
 
     const startGame = () => {
         // Reset everything
+        startRound();
         setStage(createStage());
         setDroptime(1000);
-        resetPlayer();
         setGameOver(false);
-        // setScore(0);
         setRows(0);
+        // resetPlayer(pieces, nextPiece);
+        // setScore(0);
         // setLevel(0);
     }
 
@@ -87,6 +94,7 @@ const Tetris = (props) => {
                 setGameOver(true)
                 setDroptime(null)
                 sendGameOver();
+                endRound();
             }
             updatePlayerPos({ x: 0, y: 0, collided: true })
         }
@@ -136,10 +144,19 @@ const Tetris = (props) => {
         if (!full) {
             setLoading(false);
         }
-        if (opponentDead)
+        if (opponentDead) {
             setWinner(true);
+            setNextPiece(0);
+        }
     }, [stage, sendStage, full, setLoading, opponentDead, setWinner]);
 
+    useEffect(() => {
+        if (pieces && start) {
+            resetPlayer(pieces, nextPiece);
+            sendStage(stage);
+        }
+
+    }, [pieces, start]);
 
     if (loading) {
         return (
