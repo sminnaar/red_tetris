@@ -186,8 +186,9 @@ const Tetris = (props) => {
                         <Stage stage={stage} id='1' />
 
                         <StyledPanel>
-                            {/* <h3 className="room-name">Room: {room}</h3> */}
-                            {/* <h3 className="room-name">User: {user}</h3> */}
+                            <Display text={`Room:  ${room}`} />
+                            <Display text={`User: ${user}`} />
+
                             {leader && !start ? <StartButton callback={startGame} /> : (!start ? <Display text='Waiting...' /> : null)}
                             {winner && !start ? <Display text="You win!" /> : null}
                             {gameOver ? <Display gameOver={gameOver} text="You lose!" /> : null}
