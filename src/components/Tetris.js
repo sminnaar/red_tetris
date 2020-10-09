@@ -140,7 +140,7 @@ const Tetris = (props) => {
         if (!full) {
             setLoading(false);
         }
-    }, [stage, sendStage, full, setLoading, add, addRow, clearRow, rowsCleared, setAdd, setRowsCleared, setStage, updatePlayerPos]);
+    }, [stage, sendStage, full, setLoading]);
 
     useEffect(() => {
         getLeader();
@@ -157,7 +157,7 @@ const Tetris = (props) => {
             setNextPiece(0);
             setDroptime(null);
         }
-    }, [pieces, start, leader, getLeader, nextPiece, resetPlayer, sendMessage, sendStage, setStage, stage]);
+    }, [pieces, start, leader]);
 
     if (loading) {
         return (
