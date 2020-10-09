@@ -7,11 +7,11 @@ const Game = require('./classes/Game').Game
 const Player = require('./classes/Player').Player
 const Pieces = require('./classes/Pieces').Pieces
 
+const app = express();
+
 const port = process.env.PORT || 8080;
 const server = http.createServer(app);
 const io = socketIo(server);
-
-const app = express();
 
 console.log('In Production mode')
 const router = express.Router();

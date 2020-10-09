@@ -20,7 +20,6 @@ import Loader from './Loader'
 import { useInterval } from '../hooks/useInterval'
 import { usePlayer } from '../hooks/usePlayer'
 import { useStage } from '../hooks/useStage'
-import { useStatus } from '../hooks/useStatus';
 import { useTetris } from '../hooks/useTetris';
 
 const Tetris = (props) => {
@@ -66,7 +65,6 @@ const Tetris = (props) => {
     const [gameOver, setGameOver] = useState(false)
     const [player, updatePlayerPos, resetPlayer, playerRotate, fall] = usePlayer(setNextPiece);
     const [addRow, stage, setStage, rowsCleared, setRowsCleared] = useStage(player, resetPlayer, pieces, nextPiece, clearRow);
-    const [rows, setRows] = useStatus(rowsCleared);
 
     const moveBlock = dir => {
         if (!checkCollision(player, stage, { x: dir, y: 0 })) {
@@ -142,7 +140,7 @@ const Tetris = (props) => {
         if (!full) {
             setLoading(false);
         }
-    }, [stage, sendStage, full, setLoading]);
+    }, [stage, sendStage, full, setLoading, add, addRow, clearRow, rowsCleared, setAdd, setRowsCleared, setStage, updatePlayerPos]);
 
     useEffect(() => {
         getLeader();
@@ -159,7 +157,7 @@ const Tetris = (props) => {
             setNextPiece(0);
             setDroptime(null);
         }
-    }, [pieces, start, leader]);
+    }, [pieces, start, leader, getLeader, nextPiece, resetPlayer, sendMessage, sendStage, setStage, stage]);
 
     if (loading) {
         return (

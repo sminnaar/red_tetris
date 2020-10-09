@@ -47,7 +47,7 @@ export const useStage = (player, resetPlayer, pieces, nextPiece) => {
             return newStage;
         };
         setStage(prev => updateStage(prev))
-    }, [player, resetPlayer])
+    }, [player, resetPlayer, nextPiece, pieces])
 
     return [addRow, stage, setStage, rowsCleared, setRowsCleared, player]
 }
