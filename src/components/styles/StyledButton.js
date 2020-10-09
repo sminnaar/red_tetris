@@ -7,7 +7,7 @@ export const StyledButton = styled.button`
   padding: 20px;
   min-height: 30px;
   /* width: 100%; */
-  border-radius: 20px;
+  // border-radius: 20px;
   border: none;
   color: grey;
   background: #333;
