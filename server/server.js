@@ -11,6 +11,18 @@ const port = process.env.PORT || 8080;
 const server = http.createServer(app);
 const io = socketIo(server);
 
+const app = express();
+
+console.log('In Production mode')
+const router = express.Router();
+router.use(express.static(path.join(__dirname, '../build')));
+router.get('/*', function (req, res) {
+  res.sendFile(path.join(__dirname, '../build', 'index.html'));
+});
+
+app.use(router);
+
+
 const rooms = {};
 const users = {};
 
