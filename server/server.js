@@ -14,20 +14,15 @@ const app = express();
 
 if (process.env.NODE_ENV != 'development') {
   console.log('In Production mode')
-
   const router = express.Router();
-
   router.use(express.static(path.join(__dirname, '../build')));
-
   router.get('/*', function (req, res) {
     res.sendFile(path.join(__dirname, '../build', 'index.html'));
   });
 
   app.use(router);
 } else {
-
   const cors = require('cors');
-
   var whitelist = ['http:localhost:3000']
   var corsOptions = {
     origin: function (origin, callback) {
@@ -42,21 +37,16 @@ if (process.env.NODE_ENV != 'development') {
   app.use(cors(corsOptions));
 }
 
+const port = process.env.PORT || 8080;
 const server = http.createServer(app);
 const io = socketIo(server);
-
-const port = process.env.PORT || 8080;
 
 const rooms = {};
 const users = {};
 
 io.on("connection", (socket) => {
-
-  console.log(`Client ${socket.id} connected`);
-
+  // console.log(`Client ${socket.id} connected`);
   const { roomId, userId } = socket.handshake.query;
-  // console.log(`Server roomId: ${roomId}`);
-  // console.log(`Server userId: ${userId}`);
 
   // Rooms, Users and Joining 
   if (roomId && userId) {
@@ -73,8 +63,6 @@ io.on("connection", (socket) => {
         users: [user]
       };
       rooms[roomId] = new Game(room);
-      // console.log("Created: ");
-      // console.log(rooms[roomId]);
       socket.join(roomId);
     }
     else {
@@ -85,8 +73,6 @@ io.on("connection", (socket) => {
       } else {
         rooms[roomId].users.push(user);
         socket.join(roomId);
-        // console.log("Added: ");
-        // console.log(rooms[roomId].users);
       }
     }
   }
@@ -98,23 +84,16 @@ io.on("connection", (socket) => {
 
   // Listen for new game events
   socket.on('stage', (data) => {
-    // console.log('Sent Player move')
-    // console.log(data.body);
     io.in(roomId).emit('stage', data);
   });
 
   // Listen for new game events
   socket.on('clearRow', (data) => {
-    // console.log('Sent Player move')
-    console.log('addrow');
     io.in(roomId).emit('addRow', data.senderId);
   });
 
   socket.on('dead', (data) => {
-    // console.log('Sent Player is dead')
-    // console.log(data);
     rooms[data.roomId].winner = rooms[data.roomId].users.filter(x => x.socket != data.senderId);
-    // console.log(rooms[data.roomId]);
     io.in(roomId).emit('dead', data.senderId);
   });
 
@@ -126,72 +105,47 @@ io.on("connection", (socket) => {
       pieces.push(Piece.randomTetromino());
       i++;
     }
-    console.log('setStart');
     rooms[roomId].start = true;
     io.to(roomId).emit('setStart', pieces);
   });
 
   socket.on('getLeader', () => {
-    console.log('getLeader');
     const leader = rooms[roomId].leader;
-    console.log(leader)
     io.to(roomId).emit('setLeader', leader);
   });
 
   socket.on('end', (room) => {
-    console.log('setEnd');
     rooms[roomId].start = false;
     io.to(roomId).emit('setEnd');
   });
 
   socket.on('disconnect', () => {
-    console.log(`Client ${socket.id} disconnected`);
-
+    // console.log(`Client ${socket.id} disconnected`);
     if (roomId && userId) {
-
       const roomsToDelete = [];
       for (const roomId in rooms) {
         var room = rooms[roomId];
 
-        console.log(room);
-
         if (room.users.some(user => user.socket === socket.id)) {
           room.users = room.users.filter((user) => user.socket !== socket.id);
-
-
           if (room.leader === socket.id && room.users.length === 1) {
             room.leader = room.users[0].socket;
             io.to(roomId).emit('setLeader', room.leader);
           }
-
           socket.leave(roomId);
-
-          console.log(room);
-          // console.log("Left: ");
-          // console.log(rooms[roomId].users);
-          // console.log("Object found inside the array.");
+          // console.log(room);
         }
       }
       // Prepare to delete any rooms that are now empty
-      // console.log(room.users.length === 0);
-      // console.log(room);
       if (room.users.length == 0) {
-        // console.log("EMPTY found")
         roomsToDelete.push(room);
       }
       // Delete all the empty rooms that we found earlier
       for (const room of roomsToDelete) {
-        // console.log("DELTING:")
-        // console.log(rooms[room.roomId]);
-        // console.log("ROOMS:")
         delete rooms[room.roomId];
       }
-      // console.log(rooms);
-
     }
-
   });
-
 });
 
 server.listen(port, () => console.log(`Listening on port ${port}`));

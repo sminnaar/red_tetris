@@ -25,11 +25,11 @@ import { useTetris } from '../hooks/useTetris';
 
 const Tetris = (props) => {
     const url = props.location.pathname;
-
     const room = url.substring(1, url.indexOf('['));
     const user = url.substring((url.indexOf('[') + 1), url.indexOf(']'));
 
     const {
+        winner,
         add,
         setAdd,
         clearRow,
@@ -39,7 +39,6 @@ const Tetris = (props) => {
         pieces,
         startRound,
         endRound,
-        opponentDead,
         full,
         messages,
         sendMessage,
@@ -49,9 +48,7 @@ const Tetris = (props) => {
     } = useTetris(room, user);
 
     const [loading, setLoading] = useState(true)
-
     const [newMessage, setNewMessage] = useState("");
-
     const [nextPiece, setNextPiece] = useState(0);
 
     const boardRef = useRef(null);
@@ -70,7 +67,6 @@ const Tetris = (props) => {
     const [player, updatePlayerPos, resetPlayer, playerRotate, fall] = usePlayer(setNextPiece);
     const [addRow, stage, setStage, rowsCleared, setRowsCleared] = useStage(player, resetPlayer, pieces, nextPiece, clearRow);
     const [rows, setRows] = useStatus(rowsCleared);
-    const [winner, setWinner] = useStatus(false);
 
     const moveBlock = dir => {
         if (!checkCollision(player, stage, { x: dir, y: 0 })) {
@@ -78,25 +74,21 @@ const Tetris = (props) => {
         }
     }
 
-
     const startGame = () => {
-        // Reset everything
         setNextPiece(0)
         startRound();
     }
-
 
     const drop = () => {
         if (!checkCollision(player, stage, { x: 0, y: 1 })) {
             updatePlayerPos({ x: 0, y: 1, collided: false })
         } else {
             if (player.pos.y < 1) {
-                // Game Over!!!!
                 setGameOver(true)
                 setDroptime(null)
                 sendGameOver();
-                endRound();
                 setNextPiece(0);
+                endRound();
             }
             updatePlayerPos({ x: 0, y: 0, collided: true })
         }
@@ -105,22 +97,17 @@ const Tetris = (props) => {
     const keyUp = ({ keyCode }) => {
         if (!gameOver) {
             if (keyCode === 40) {
-                // console.log("Interval On");
                 setDroptime(1000);
             }
         }
     }
 
     const dropPlayer = () => {
-        // console.log("Interval Off");
         setDroptime(null);
         drop();
     }
 
     const move = ({ keyCode }) => {
-        // Check what inputs are used
-        // To check keycode to modify controls
-        // console.log(keyCode)
         if (!gameOver) {
             if (keyCode === 37) {
                 moveBlock(-1);
@@ -142,48 +129,36 @@ const Tetris = (props) => {
 
     useEffect(() => {
         if (rowsCleared) {
-            console.log('cleared')
             clearRow();
             setRowsCleared(0);
         }
         if (add) {
             addRow(stage, setStage);
-            // updatePlayerPos({ x: 0, y: 0, collided: false });
+            updatePlayerPos({ x: 0, y: 0, collided: false });
             setAdd(false);
-            console.log("in add")
-            console.log(add)
-            sendStage(stage);
+            // sendStage(stage);
         }
         sendStage(stage);
         if (!full) {
             setLoading(false);
         }
-
-    }, [stage, sendStage, full, setLoading, opponentDead, setWinner]);
+    }, [stage, sendStage, full, setLoading]);
 
     useEffect(() => {
         getLeader();
         if (pieces && start) {
-            setStage(createStage());
-            setNextPiece(0);
-            setWinner(false)
-            setDroptime(1000);
             setGameOver(false);
-            setRows(0);
+            setStage(createStage());
+            setNextPiece(0)
+            setDroptime(1000);
             resetPlayer(pieces, nextPiece);
             sendStage(stage);
             boardRef.current.focus();
         }
         else if (!start) {
-            // setStage(createStage());
-            // sendStage(stage);
             setNextPiece(0);
-            // setWinner(true)
             setDroptime(null);
-            setGameOver(false);
-            setRows(0);
         }
-
     }, [pieces, start, leader]);
 
     if (loading) {
@@ -193,6 +168,7 @@ const Tetris = (props) => {
             </StyledPanel>
         )
     }
+
     if (full) {
         return (
             <Redirect
@@ -205,7 +181,7 @@ const Tetris = (props) => {
                 <StyledTetrisWrapper
                     ref={boardRef}
                     role="button" tabIndex="0"
-                    onKeyDown={e => move(e) && console.log(e.keyCode)}
+                    onKeyDown={e => move(e)}
                     onKeyUp={keyUp}
                 >
                     <StyledTetris>
@@ -214,24 +190,19 @@ const Tetris = (props) => {
                         <StyledPanel>
                             {/* <h3 className="room-name">Room: {room}</h3> */}
                             {/* <h3 className="room-name">User: {user}</h3> */}
-                            {leader && !start ? <StartButton callback={startGame} /> : (!start ? <Display text='Waiting for leader to start...' /> : null)}
-                            {winner && !start ? <Display text="You have Won!!!" /> : null}
-                            {gameOver ? <Display gameOver={gameOver} text="You Lost" /> : null}
+                            {leader && !start ? <StartButton callback={startGame} /> : (!start ? <Display text='Waiting...' /> : null)}
+                            {winner && !start ? <Display text="You win!" /> : null}
+                            {gameOver ? <Display gameOver={gameOver} text="You lose!" /> : null}
                             < div >
                                 <div className="messages-container">
                                     <ol className="messages-list">
                                         {messages.map((message, i) => (
-                                            <li
-                                                key={i}
-                                                className={`message-item ${message.ownedByCurrentUser ? "my-message" : "received-message"
-                                                    }`}
-                                            >
+                                            <li key={i} className={`message-item ${message.ownedByCurrentUser ? "my-message" : "received-message"}`} >
                                                 {message.body}
                                             </li>
                                         ))}
                                     </ol>
                                 </div>
-
                                 <StyledInput>
                                     <textarea
                                         value={newMessage}
@@ -246,7 +217,6 @@ const Tetris = (props) => {
                             </div>
                                 )
                         </StyledPanel>
-
                         <Stage stage={opponentStage.body} id='2' />
                     </StyledTetris>
                 </StyledTetrisWrapper >

@@ -3,64 +3,33 @@ import { createStage } from '../lib/helpers'
 
 export const useStage = (player, resetPlayer, pieces, nextPiece) => {
 
-    // console.log(player);
     const [stage, setStage] = useState(createStage());
     const [rowsCleared, setRowsCleared] = useState(0)
 
-    // const createStage = () =>
-    // Array.from(Array(STAGE_HEIGHT), () =>
-    //     new Array(STAGE_WIDTH).fill([0, 'clear'])
-    // )
-
-    // const addRow = (stage, setStage) => {
-    //     const temp = Array.from(Array(20), () => new Array(12).fill(['I', '']))
-
-    //     // setStage(temp);
-    //     setStage(createStage());
-    // }
-
     const addRow = (stage, setStage) => {
-        console.log("In stage addRow");
-
         for (let i = 1; i < stage.length; i++)
             stage[i - 1] = [...stage[i]];
-
         stage[stage.length - 1] = new Array(stage[0].length).fill(["X", ""]);
-
-        console.log(stage);
-        // setStage(createStage());
         setStage(stage);
     };
 
     useEffect(() => {
-        // setRowsCleared(0);
-        // Logic to clear rows. Use the stage to remove row from other player
         const sweepRows = newStage =>
             newStage.reduce((ack, row) => {
                 if (row.findIndex((cell) => cell[0] === 0 || cell[0] === "X") === -1) {
-                    // if (row.findIndex(cell => cell[0] === 0) === -1) {
-                    // setRowsCleared(prev => prev + 1);
-
                     setRowsCleared(1);
-
-
-
-
                     ack.unshift(new Array(newStage[0].length).fill([0, 'clear']));
                     return ack;
-
                 }
                 ack.push(row);
                 return ack;
             }, [])
 
         const updateStage = prevStage => {
-            // Flush the stage
             const newStage = prevStage.map(row =>
                 row.map(cell => (cell[1] === 'clear' ? [0, 'clear'] : cell))
             );
 
-            // Draw the tetromino
             player.tetromino.forEach((row, y) => {
                 row.forEach((value, x) => {
                     if (value !== 0) {
@@ -71,17 +40,13 @@ export const useStage = (player, resetPlayer, pieces, nextPiece) => {
                     }
                 });
             });
-            // Check if the Tetramino collided with borders or other pieces
             if (player.collided) {
                 resetPlayer(pieces, nextPiece);
                 return sweepRows(newStage);
             }
-
             return newStage;
         };
-
         setStage(prev => updateStage(prev))
-
     }, [player, resetPlayer])
 
     return [addRow, stage, setStage, rowsCleared, setRowsCleared, player]
