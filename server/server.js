@@ -22,7 +22,6 @@ router.get('/*', function (req, res) {
 
 app.use(router);
 
-
 const rooms = {};
 const users = {};
 
