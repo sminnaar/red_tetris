@@ -1,6 +1,3 @@
-
-// import { joinRoom, leaveRooms, checkScore, beginRound } from './classes/Game'
-
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
@@ -9,33 +6,6 @@ const path = require('path');
 const Game = require('./classes/Game').Game
 const Player = require('./classes/Player').Player
 const Pieces = require('./classes/Pieces').Pieces
-
-const app = express();
-
-if (process.env.NODE_ENV != 'development') {
-  console.log('In Production mode')
-  const router = express.Router();
-  router.use(express.static(path.join(__dirname, '../build')));
-  router.get('/*', function (req, res) {
-    res.sendFile(path.join(__dirname, '../build', 'index.html'));
-  });
-
-  app.use(router);
-} else {
-  const cors = require('cors');
-  var whitelist = ['http:localhost:3000']
-  var corsOptions = {
-    origin: function (origin, callback) {
-      if (whitelist.indexOf(origin) !== -1) {
-        callback(null, true)
-      } else {
-        callback(new Error('Not allowed by CORS'))
-      }
-    }
-  }
-
-  app.use(cors(corsOptions));
-}
 
 const port = process.env.PORT || 8080;
 const server = http.createServer(app);
